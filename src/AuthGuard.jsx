@@ -24,6 +24,7 @@ export default function AuthGuard({ children }) {
   const [user, setUser] = useState(null);
   const [hasAccess, setHasAccess] = useState(null); // null = still checking
   const [checking, setChecking] = useState(true);
+  const [daysLeft, setDaysLeft] = useState(null); // days until current plan expires (null = unknown/not applicable)
 
   useEffect(() => {
     // On first load, check if there's already a logged-in session
@@ -64,6 +65,25 @@ export default function AuthGuard({ children }) {
           supabase.auth.signOut();
         }
       });
+
+      // Separately fetch the actual expiry date of their latest active
+      // plan, so we can show a "X din mein expire" warning banner.
+      supabase
+        .from('subscriptions')
+        .select('expires_at')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .order('expires_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (!data?.expires_at) {
+            setDaysLeft(null);
+            return;
+          }
+          const msLeft = new Date(data.expires_at).getTime() - Date.now();
+          setDaysLeft(Math.ceil(msLeft / (1000 * 60 * 60 * 24)));
+        });
     };
 
     checkAccess();
@@ -91,6 +111,19 @@ export default function AuthGuard({ children }) {
 
   return (
     <div>
+      {daysLeft !== null && daysLeft <= 3 && (
+        <div style={{ background: '#FFF4E5', borderBottom: '1px solid #F0C36D', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap', fontFamily: 'system-ui, sans-serif' }}>
+          <span style={{ fontSize: 13, color: '#8A5A00' }}>
+            ⚠️ Aapka subscription {daysLeft <= 0 ? 'aaj' : `${daysLeft} din mein`} expire ho raha hai — renew karna na bhoolo.
+          </span>
+          <button
+            onClick={() => setHasAccess(false)}
+            style={{ fontSize: 12, background: '#0F6E56', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', fontWeight: 500 }}
+          >
+            Abhi Renew Karo
+          </button>
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 16px', borderBottom: '1px solid #e5e4df', fontFamily: 'system-ui, sans-serif' }}>
         <span style={{ fontSize: 12, color: '#9a9a95', marginRight: 12, alignSelf: 'center' }}>{user.email}</span>
         <button
