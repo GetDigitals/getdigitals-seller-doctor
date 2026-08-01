@@ -15,6 +15,11 @@ import { supabase } from './supabaseClient';
 import Auth from './Auth';
 import PaymentScreen from './PaymentScreen';
 
+// Emails in this list always get full access, no payment/subscription
+// needed — used for the owner/admin to test and use the tool for free.
+// Add more emails here (comma-separated) if other people need free access.
+const ADMIN_EMAILS = ['tailorashok897@gmail.com'];
+
 export default function AuthGuard({ children }) {
   const [user, setUser] = useState(null);
   const [hasAccess, setHasAccess] = useState(null); // null = still checking
@@ -38,6 +43,11 @@ export default function AuthGuard({ children }) {
   useEffect(() => {
     if (!user) {
       setHasAccess(null);
+      return;
+    }
+    // Admins skip the subscription check entirely — always full access.
+    if (ADMIN_EMAILS.includes(user.email)) {
+      setHasAccess(true);
       return;
     }
     // Ask the database (via the helper function from the SQL schema)

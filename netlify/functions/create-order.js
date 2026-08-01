@@ -13,7 +13,23 @@ exports.handler = async (event) => {
 
   try {
     const { plan, userId } = JSON.parse(event.body);
-    const amount = plan === 'intro_30day' ? 99900 : 30000; // paise
+
+    // Amounts in paise (₹1 = 100 paise).
+    //   full_30day   → ₹999, full 30-day access
+    //   trial_7day   → ₹299, 7-day trial
+    //   topup_23day  → ₹700, extends an active trial to a full 30 days
+    //                  (₹299 + ₹700 = ₹999, same as buying full_30day directly)
+    //   monthly      → ₹300, recurring renewal after the first 30 days
+    const AMOUNTS = {
+      full_30day: 99900,
+      trial_7day: 29900,
+      topup_23day: 70000,
+      monthly: 30000,
+    };
+    const amount = AMOUNTS[plan];
+    if (!amount) {
+      return { statusCode: 400, body: JSON.stringify({ error: 'Invalid plan' }) };
+    }
 
     const order = await razorpay.orders.create({
       amount,
