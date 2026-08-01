@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Profit Toolkit - 4-in-1 Calculator Suite | GETDIGITALS.IN</title>
+    <meta name="description" content="Free pricing, break-even, profit margin aur revenue goal calculators — Indian sellers ke liye GST-ready business toolkit. GETDIGITALS.IN">
+    <meta name="keywords" content="business calculator, profit calculator, GST calculator, break-even calculator, pricing calculator, e-commerce tools, India">
+    <meta name="author" content="GETDIGITALS.IN">
+    <meta property="og:title" content="Business Profit Toolkit - 4-in-1 Calculator Suite">
+    <meta property="og:description" content="Free pricing, break-even, profit margin aur revenue goal calculators — GST-ready, instant results.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://getdigitals-toolkit.netlify.app/">
+    <meta property="og:image" content="https://getdigitals-toolkit.netlify.app/toolkit-og.jpg">
+    <meta property="og:site_name" content="GETDIGITALS.IN">
+    <meta property="og:locale" content="en_IN">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Business Profit Toolkit - 4-in-1 Calculator Suite">
+    <meta property="twitter:description" content="Free pricing, break-even, profit margin aur revenue goal calculators — GST-ready, instant results.">
+    <meta property="twitter:image" content="https://getdigitals-toolkit.netlify.app/toolkit-og.jpg">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230ea5e9'/%3E%3Cstop offset='100%25' stop-color='%236366f1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext x='50' y='65' font-size='55' text-anchor='middle' fill='white' font-family='Arial'%3E%24%3C/text%3E%3C/svg%3E">
+
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1554247259564235');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1554247259564235&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #e2e8f0; min-height: 100vh; }
+        .container { max-width: 950px; margin: 0 auto; padding: 20px; }
+        .brand-header { text-align: center; padding: 30px 20px 22px; background: linear-gradient(180deg, rgba(56,189,248,0.1) 0%, transparent 100%); border-radius: 24px; margin-bottom: 22px; border: 1px solid rgba(56,189,248,0.15); position: relative; overflow: hidden; }
+        .brand-header::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(56,189,248,0.05) 0%, transparent 70%); pointer-events: none; }
+        .brand-logo { width: 68px; height: 68px; margin: 0 auto 12px; background: linear-gradient(135deg, #0ea5e9, #6366f1); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(14,165,233,0.3); position: relative; z-index: 1; }
+        .brand-logo svg { width: 38px; height: 38px; }
+        .brand-name { font-size: 30px; font-weight: 900; letter-spacing: 3px; background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px; position: relative; z-index: 1; }
+        .brand-tagline { font-size: 13px; color: #94a3b8; letter-spacing: 2px; font-weight: 500; position: relative; z-index: 1; }
+        .brand-divider { width: 90px; height: 3px; background: linear-gradient(90deg, #38bdf8, #818cf8); border-radius: 3px; margin: 14px auto 0; position: relative; z-index: 1; }
+        .currency-bar { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; padding: 10px 18px; background: rgba(30,41,59,0.6); border-radius: 14px; border: 1px solid #334155; max-width: 420px; margin-left: auto; margin-right: auto; }
+        .currency-bar label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .currency-bar select { padding: 9px 14px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 14px; font-weight: 700; outline: none; cursor: pointer; }
+        .currency-bar .curr-flag { font-size: 18px; }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h1 { font-size: 26px; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px; font-weight: 800; }
+        .header p { color: #94a3b8; font-size: 14px; }
+        .badge-strip { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+        .badge-strip span { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25); padding: 5px 14px; border-radius: 20px; font-size: 11px; color: #38bdf8; font-weight: 600; }
+        .toolbar { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+        .action-btn { padding: 10px 18px; border-radius: 10px; border: 1px solid #334155; background: rgba(30,41,59,0.8); color: #e2e8f0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px; }
+        .action-btn:hover { border-color: #38bdf8; color: #38bdf8; }
+        .action-btn.primary { background: linear-gradient(135deg, #38bdf8, #818cf8); color: #0f172a; border-color: transparent; font-weight: 700; }
+        .action-btn.primary:hover { box-shadow: 0 4px 15px rgba(56,189,248,0.3); transform: translateY(-1px); }
+        .action-btn.clear:hover { border-color: #f87171; color: #f87171; }
+        .action-btn.whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); color: white; border-color: transparent; font-weight: 700; }
+        .action-btn.whatsapp:hover { box-shadow: 0 4px 15px rgba(37,211,102,0.3); transform: translateY(-1px); }
+        .action-btn.copy:hover { border-color: #fbbf24; color: #fbbf24; }
+        .action-btn.export { background: linear-gradient(135deg, #10b981, #059669); color: white; border-color: transparent; font-weight: 700; }
+        .action-btn.export:hover { box-shadow: 0 4px 15px rgba(16,185,129,0.3); transform: translateY(-1px); }
+        .chart-box { margin-top: 20px; padding: 20px; background: #0f172a; border-radius: 16px; border: 1px solid #334155; }
+        .chart-box h4 { font-size: 12px; color: #94a3b8; margin-bottom: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .chart-box svg { width: 100%; height: auto; display: block; }
+        .chart-legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 12px; justify-content: center; }
+        .chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #cbd5e1; }
+        .chart-legend-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+        .template-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; padding: 12px 14px; background: rgba(15,23,42,0.5); border-radius: 12px; border: 1px solid #334155; }
+        .template-label { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
+        .template-btn { padding: 8px 14px; border-radius: 9px; border: 1px solid #334155; background: rgba(30,41,59,0.9); color: #cbd5e1; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.25s; white-space: nowrap; }
+        .template-btn:hover { transform: translateY(-1px); }
+        .template-btn.meesho:hover, .template-btn.meesho.active { border-color: #9333ea; color: #d8b4fe; background: rgba(147,51,234,0.15); }
+        .template-btn.amazon:hover, .template-btn.amazon.active { border-color: #f59e0b; color: #fcd34d; background: rgba(245,158,11,0.15); }
+        .template-btn.flipkart:hover, .template-btn.flipkart.active { border-color: #2563eb; color: #93c5fd; background: rgba(37,99,235,0.15); }
+        .template-btn.dropshipper:hover, .template-btn.dropshipper.active { border-color: #16a34a; color: #86efac; background: rgba(22,163,74,0.15); }
+        @media (max-width: 640px) { .template-bar { justify-content: center; } .template-label { width: 100%; text-align: center; margin-bottom: 4px; } }
+        .tabs { display: flex; gap: 10px; margin-bottom: 26px; flex-wrap: wrap; justify-content: center; }
+        .tab { padding: 12px 22px; border-radius: 12px; background: rgba(30,41,59,0.8); border: 1px solid #334155; color: #94a3b8; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s; }
+        .tab.active { background: linear-gradient(135deg, #38bdf8, #818cf8); color: #0f172a; border-color: transparent; box-shadow: 0 4px 15px rgba(56,189,248,0.3); }
+        .tab:hover:not(.active) { border-color: #38bdf8; color: #e2e8f0; background: rgba(30,41,59,1); }
+        .panel { display: none; background: rgba(30,41,59,0.6); border-radius: 20px; padding: 30px; border: 1px solid #334155; backdrop-filter: blur(10px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        .panel.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        @media (max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } .header h1 { font-size: 22px; } .tab { padding: 10px 16px; font-size: 12px; } .brand-name { font-size: 24px; } .currency-bar { flex-direction: column; gap: 8px; } }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.8px; }
+        input { width: 100%; padding: 13px 15px; border-radius: 11px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 15px; outline: none; transition: all 0.3s; }
+        input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.1); }
+        input::placeholder { color: #475569; }
+        .highlight-box { background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.08)); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 22px; text-align: center; margin-bottom: 22px; }
+        .highlight-box h3 { font-size: 12px; color: #94a3b8; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .highlight-box .big { font-size: 40px; font-weight: 900; background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .results { margin-top: 24px; padding: 22px; background: #0f172a; border-radius: 16px; border: 1px solid #334155; }
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #1e293b; }
+        .result-row:last-child { border-bottom: none; }
+        .result-label { color: #94a3b8; font-size: 14px; font-weight: 500; }
+        .result-value { font-size: 19px; font-weight: 800; color: #38bdf8; }
+        .result-value.green { color: #4ade80; }
+        .result-value.red { color: #f87171; }
+        .result-value.gold { color: #fbbf24; }
+        .result-value.purple { color: #c084fc; }
+        .badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge.success { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+        .badge.warning { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .badge.danger { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+        .info-text { font-size: 12px; color: #64748b; margin-top: 14px; line-height: 1.6; padding: 14px; background: rgba(15,23,42,0.5); border-radius: 12px; border-left: 3px solid #38bdf8; }
+        .share-section { margin-top: 20px; padding: 18px; background: linear-gradient(135deg, rgba(37,211,102,0.08), rgba(18,140,126,0.08)); border: 1px solid rgba(37,211,102,0.2); border-radius: 14px; text-align: center; }
+        .share-section h4 { font-size: 13px; color: #94a3b8; margin-bottom: 12px; font-weight: 600; }
+        .share-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .whatsapp-cta { margin-top: 20px; padding: 18px 22px; background: linear-gradient(135deg, rgba(37,211,102,0.12), rgba(18,140,126,0.12)); border: 1px solid rgba(37,211,102,0.25); border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+        .whatsapp-cta p { font-size: 14px; color: #e2e8f0; font-weight: 500; flex: 1; }
+        .whatsapp-cta p span { color: #4ade80; font-weight: 700; }
+        @media (max-width: 640px) { .whatsapp-cta { flex-direction: column; text-align: center; } }
+        .float-whatsapp { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background: linear-gradient(135deg, #25d366, #128c7e); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(37,211,102,0.4); cursor: pointer; z-index: 1000; transition: transform 0.3s; text-decoration: none; }
+        .float-whatsapp:hover { transform: scale(1.1); }
+        .float-whatsapp svg { width: 28px; height: 28px; }
+        .footer { text-align: center; margin-top: 40px; padding: 24px; }
+        .footer p { color: #475569; font-size: 13px; }
+        .footer-brand { font-weight: 800; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e293b; color: #4ade80; padding: 12px 24px; border-radius: 10px; border: 1px solid #334155; font-size: 14px; font-weight: 600; z-index: 2000; opacity: 0; transition: all 0.4s ease; pointer-events: none; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        @media print { body { background: #fff !important; color: #000 !important; } .brand-header { background: #f0f0f0 !important; border: 1px solid #ccc !important; } .brand-name { -webkit-text-fill-color: #1e3a5f !important; color: #1e3a5f !important; } .brand-tagline { color: #666 !important; } .panel { display: block !important; background: white !important; border: 1px solid #ccc !important; margin-bottom: 20px; page-break-inside: avoid; } .tabs, .toolbar, .badge-strip, .currency-bar, .share-section, .whatsapp-cta, .float-whatsapp { display: none !important; } .results { background: #f9f9f9 !important; border: 1px solid #ddd !important; } .highlight-box { background: #f0f7ff !important; border: 1px solid #b3d9ff !important; } .highlight-box .big { -webkit-text-fill-color: #0066cc !important; color: #0066cc !important; } .result-value { color: #0066cc !important; } .result-value.green { color: #2d8a2d !important; } .result-value.red { color: #cc3333 !important; } .result-value.gold { color: #cc8800 !important; } .result-value.purple { color: #663399 !important; } .info-text { background: #f5f5f5 !important; border-left: 3px solid #0066cc !important; color: #444 !important; } input { border: 1px solid #ccc !important; background: #fafafa !important; color: #333 !important; } label { color: #555 !important; } .footer { border-top: 1px solid #ddd; } .footer p { color: #666 !important; } .footer-brand { -webkit-text-fill-color: #1e3a5f !important; color: #1e3a5f !important; } }
+    </style>
+</head>
+<body>
+<script>
+(function () {
+    document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    document.addEventListener('keydown', function (e) {
+        var k = e.key;
+        if (k === 'F12') e.preventDefault();
+        if (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].indexOf(k) !== -1) e.preventDefault();
+        if (e.ctrlKey && (k === 'u' || k === 'U')) e.preventDefault();
+        if (e.ctrlKey && (k === 's' || k === 'S')) e.preventDefault();
+    });
+    console.log('%cRuko! 🛑', 'color:#f87171;font-size:36px;font-weight:900;');
+    console.log('%cYe GETDIGITALS.IN ka licensed tool hai. Code copy karna ya redistribute karna allowed nahi hai.', 'font-size:13px;color:#94a3b8;');
+    var threshold = 160, warned = false, warnEl = null;
+    setInterval(function () {
+        var wDelta = window.outerWidth - window.innerWidth;
+        var hDelta = window.outerHeight - window.innerHeight;
+        if ((wDelta > threshold || hDelta > threshold)) {
+            if (!warned) {
+                warned = true;
+                warnEl = document.createElement('div');
+                warnEl.style.cssText = 'position:fixed;inset:0;background:#0f172aee;color:#f87171;display:flex;align-items:center;justify-content:center;z-index:99999;font-size:16px;text-align:center;padding:24px;font-family:sans-serif;';
+                warnEl.innerHTML = '⚠️ Developer Tools detected.<br>Ye licensed tool hai — content copy karna allowed nahi hai.';
+                document.body.appendChild(warnEl);
+            }
+        } else if (warned) {
+            warned = false;
+            if (warnEl && warnEl.parentNode) warnEl.parentNode.removeChild(warnEl);
+        }
+    }, 1000);
+})();
+</script>
+<div class="toast" id="toast">Copied!</div>
+<div class="container">
+    <div class="brand-header">
+        <div class="brand-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.5 19c0-3.037-2.463-5.5-5.5-5.5S6.5 15.963 6.5 19"/>
+                <path d="M17.5 19H19a3 3 0 0 0 3-3c0-1.657-1.343-3-3-3-.5 0-.97.12-1.38.34"/>
+                <path d="M6.5 19H5a3 3 0 0 1-3-3c0-1.657 1.343-3 3-3 .5 0 .97.12 1.38.34"/>
+                <circle cx="12" cy="10" r="3"/>
+            </svg>
+        </div>
+        <div class="brand-name">GETDIGITALS.IN</div>
+        <div class="brand-tagline">Digital Products | Courses | Templates</div>
+        <div class="brand-divider"></div>
+    </div>
+
+    <div class="currency-bar">
+        <span class="curr-flag" id="curr-flag">🇮🇳</span>
+        <label>Select Currency</label>
+        <select id="currency-select" onchange="changeCurrency()">
+            <option value="INR" data-symbol="₹" data-flag="🇮🇳">Indian Rupee (₹)</option>
+            <option value="USD" data-symbol="$" data-flag="🇺🇸">US Dollar ($)</option>
+            <option value="GBP" data-symbol="£" data-flag="🇬🇧">British Pound (£)</option>
+            <option value="EUR" data-symbol="€" data-flag="🇪🇺">Euro (€)</option>
+            <option value="AED" data-symbol="د.إ" data-flag="🇦🇪">UAE Dirham (د.إ)</option>
+            <option value="CAD" data-symbol="C$" data-flag="🇨🇦">Canadian Dollar (C$)</option>
+        </select>
+    </div>
+
+    <div class="header">
+        <h1>💼 Business Profit Toolkit</h1>
+        <p>4 Powerful Calculators to Skyrocket Your Business Revenue</p>
+        <div class="badge-strip">
+            <span>⚡ Instant Results</span>
+            <span>🔒 100% Private</span>
+            <span>📱 Mobile Friendly</span>
+            <span>💯 Free Forever</span>
+        </div>
+        <div class="toolbar">
+            <button class="action-btn primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+            <button class="action-btn clear" onclick="clearAllData()">🗑️ Clear All Data</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab(0)">💰 Pricing Calculator</div>
+        <div class="tab" onclick="switchTab(1)">📊 Break-Even</div>
+        <div class="tab" onclick="switchTab(2)">📈 Profit Analyzer</div>
+        <div class="tab" onclick="switchTab(3)">🎯 Goal Planner</div>
+        <div class="tab" onclick="switchTab(4)">📦 Flipkart Fee Calc</div>
+    </div>
+    <div class="panel active" id="panel-0">
+        <div class="template-bar">
+            <span class="template-label">⚡ Quick Fill:</span>
+            <button class="template-btn meesho" onclick="loadTemplate('meesho')">🛍️ Meesho Seller</button>
+            <button class="template-btn amazon" onclick="loadTemplate('amazon')">📦 Amazon Seller</button>
+            <button class="template-btn flipkart" onclick="loadTemplate('flipkart')">🛒 Flipkart Seller</button>
+            <button class="template-btn dropshipper" onclick="loadTemplate('dropshipper')">🚀 Dropshipper (Own Site)</button>
+        </div>
+        <div class="highlight-box">
+            <h3>Recommended Selling Price (Incl. GST)</h3>
+            <div class="big" id="price-result">₹0.00</div>
+        </div>
+        <div class="grid-3">
+            <div class="form-group"><label>Product Cost</label><input type="number" id="pc-cost" placeholder="e.g. 250" oninput="calcPricing()"></div>
+            <div class="form-group"><label>Shipping Cost (only if YOU pay it)</label><input type="number" id="pc-shipping" placeholder="e.g. 0 on Meesho/Flipkart (buyer pays)" oninput="calcPricing()"></div>
+            <div class="form-group"><label>Platform Fee (₹, flat amount)</label><input type="number" id="pc-fee" placeholder="e.g. 12 (0 for Meesho)" oninput="calcPricing()"></div>
+            <div class="form-group"><label>Desired Profit Margin (%)</label><input type="number" id="pc-margin" placeholder="e.g. 40" oninput="calcPricing()"></div>
+            <div class="form-group"><label>GST (%)</label><input type="number" id="pc-gst" placeholder="e.g. 18" oninput="calcPricing()"></div>
+            <div class="form-group"><label style="opacity:0;">.</label><div style="display:flex;gap:8px;"><button class="action-btn clear" style="flex:1;padding:13px;" onclick="clearTool(0)">🗑️ Clear</button><button class="action-btn export" style="flex:1;padding:13px;" onclick="exportToExcel(0)">📊 Excel</button></div></div>
+        </div>
+        <h4 style="margin: 22px 0 14px; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:1px; border-top:1px solid #334155; padding-top:20px;">📉 Return &amp; RTO Impact (Recommended for COD sellers)</h4>
+        <div class="grid-3">
+            <div class="form-group"><label>Return Rate (%)</label><input type="number" id="pc-return" placeholder="e.g. 8" oninput="calcPricing()"></div>
+            <div class="form-group"><label>RTO Rate (%)</label><input type="number" id="pc-rto" placeholder="e.g. 15 (common in COD)" oninput="calcPricing()"></div>
+            <div class="form-group"><label>Packaging Cost per Order</label><input type="number" id="pc-packaging" placeholder="e.g. 10 (box/poly/label)" oninput="calcPricing()"></div>
+            <div class="form-group"><label>Reverse Pickup Cost (Returns Only)</label><input type="number" id="pc-reverse-ship" placeholder="e.g. 60 (0 if your courier doesn't charge)" oninput="calcPricing()"></div>
+        </div>
+        <div class="results">
+            <div class="result-row"><span class="result-label">Total Cost per Unit</span><span class="result-value" id="pc-total-cost">₹0</span></div>
+            <div class="result-row"><span class="result-label">Platform Fee Amount</span><span class="result-value red" id="pc-fee-amt">₹0</span></div>
+            <div class="result-row"><span class="result-label">GST Amount (on selling price)</span><span class="result-value red" id="pc-gst-amt">₹0</span></div>
+            <div class="result-row"><span class="result-label">Final Price (incl. GST)</span><span class="result-value gold" id="pc-final-price">₹0</span></div>
+            <div class="result-row"><span class="result-label">Profit per Unit (if delivered, incl. reserve)</span><span class="result-value green" id="pc-profit">₹0</span></div>
+            <div class="result-row"><span class="result-label">Margin (incl. reserve, if delivered)</span><span class="result-value green" id="pc-margin-pct">0%</span></div>
+            <div class="result-row"><span class="result-label">↳ Of which, Return/RTO Reserve</span><span class="result-value purple" id="pc-return-buffer">₹0</span></div>
+            <div class="result-row"><span class="result-label">Loss per Return Unit (with pickup)</span><span class="result-value red" id="pc-loss-return">₹0</span></div>
+            <div class="result-row"><span class="result-label">Loss per RTO Unit (no pickup charge)</span><span class="result-value red" id="pc-loss-rto">₹0</span></div>
+            <div class="result-row"><span class="result-label">Blended Profit per Order (Real)</span><span class="result-value" id="pc-blended-profit">₹0</span></div>
+            <div class="result-row"><span class="result-label">↳ True Margin % (this is your real number)</span><span class="result-value" id="pc-true-margin-pct">0%</span></div>
+            <div class="result-row"><span class="result-label">Max Return+RTO % You Can Afford</span><span class="result-value gold" id="pc-max-return">0%</span></div>
+            <div class="result-row"><span class="result-label">Status</span><span id="pc-status"><span class="badge warning">Enter Data</span></span></div>
+        </div>
+        <div class="chart-box">
+            <h4>📊 Price Breakdown — Where Does Your Price Go?</h4>
+            <svg id="pc-chart-svg" viewBox="0 0 600 60" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div class="chart-legend" id="pc-chart-legend"></div>
+        </div>
+        <p class="info-text">💡 Pro Tip: Most successful e-commerce sellers keep 30-50% profit margin after all fees. Amazon charges 10-15%, Flipkart 10-20%. GST rate depends on your product category (commonly 5%, 12%, 18%, or 28% in India). RTO (Return to Origin) is very common in COD orders (10-25% typical) — always price it in, otherwise a "profitable" product can silently lose money. Note: "Profit per Unit (if delivered)" includes the Return/RTO Reserve — that portion isn't really yours to spend, it's the money this order carries to cover the returns/RTOs that happen on other orders. "Blended Profit per Order (Real)" is your true long-run average profit after that's accounted for.</p>
+        <div class="share-section">
+            <h4>📤 Apna result share karo</h4>
+            <div class="share-buttons">
+                <button class="action-btn whatsapp" onclick="shareWhatsApp(0)">📲 WhatsApp Pe Share</button>
+                <button class="action-btn copy" onclick="copyResults(0)">📋 Copy Results</button>
+            </div>
+        </div>
+        <div class="whatsapp-cta">
+            <p>💬 <span>In numbers ko implement karne mein help chahiye?</span> Hamari expert team se WhatsApp pe baat karo — bilkul free consultation!</p>
+            <a href="https://wa.me/916375351903?text=Hi%20GETDIGITALS.IN%2C%20I%20used%20your%20Business%20Profit%20Toolkit%20and%20need%20help%20implementing%20these%20numbers." target="_blank" class="action-btn whatsapp" style="text-decoration:none;" onclick="if(typeof fbq!=='undefined'){fbq('track','Lead');}">👉 WhatsApp Karo</a>
+        </div>
+    </div>
+
+    <div class="panel" id="panel-1">
+        <div class="highlight-box"><h3>Units to Sell for Break-Even</h3><div class="big" id="be-units">0</div></div>
+        <div class="grid-2">
+            <div class="form-group"><label>Monthly Fixed Costs</label><input type="number" id="be-fixed" placeholder="e.g. 15000" oninput="calcBreakEven()"></div>
+            <div class="form-group"><label>Variable Cost per Unit</label><input type="number" id="be-variable" placeholder="e.g. 200" oninput="calcBreakEven()"></div>
+            <div class="form-group"><label>Selling Price per Unit</label><input type="number" id="be-price" placeholder="e.g. 500" oninput="calcBreakEven()"></div>
+            <div class="form-group"><label>Expected Daily Sales</label><input type="number" id="be-daily" placeholder="e.g. 5" oninput="calcBreakEven()"></div>
+        </div>
+        <div style="text-align:center;margin-top:8px;display:flex;gap:8px;justify-content:center;"><button class="action-btn clear" onclick="clearTool(1)">🗑️ Clear This Tool</button><button class="action-btn export" onclick="exportToExcel(1)">📊 Export to Excel</button></div>
+        <div class="results">
+            <div class="result-row"><span class="result-label">Break-Even Revenue</span><span class="result-value gold" id="be-revenue">₹0</span></div>
+            <div class="result-row"><span class="result-label">Days to Break-Even</span><span class="result-value" id="be-days">0 days</span></div>
+            <div class="result-row"><span class="result-label">Monthly Profit (at target)</span><span class="result-value green" id="be-monthly">₹0</span></div>
+            <div class="result-row"><span class="result-label">Business Status</span><span id="be-status"><span class="badge warning">Enter Data</span></span></div>
+        </div>
+        <div class="chart-box">
+            <h4>📊 Break-Even Chart — Revenue vs Total Cost</h4>
+            <svg id="be-chart-svg" viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div class="chart-legend" id="be-chart-legend"></div>
+        </div>
+        <p class="info-text">💡 Formula: Break-even = Fixed Costs ÷ (Selling Price - Variable Cost). Every unit sold AFTER break-even = 100% profit!</p>
+        <div class="share-section">
+            <h4>📤 Apna result share karo</h4>
+            <div class="share-buttons">
+                <button class="action-btn whatsapp" onclick="shareWhatsApp(1)">📲 WhatsApp Pe Share</button>
+                <button class="action-btn copy" onclick="copyResults(1)">📋 Copy Results</button>
+            </div>
+        </div>
+        <div class="whatsapp-cta">
+            <p>💬 <span>In numbers ko implement karne mein help chahiye?</span> Hamari expert team se WhatsApp pe baat karo — bilkul free consultation!</p>
+            <a href="https://wa.me/916375351903?text=Hi%20GETDIGITALS.IN%2C%20I%20used%20your%20Business%20Profit%20Toolkit%20and%20need%20help%20implementing%20these%20numbers." target="_blank" class="action-btn whatsapp" style="text-decoration:none;" onclick="if(typeof fbq!=='undefined'){fbq('track','Lead');}">👉 WhatsApp Karo</a>
+        </div>
+    </div>
+    <div class="panel" id="panel-2">
+        <div class="grid-2">
+            <div class="form-group"><label>Total Monthly Revenue</label><input type="number" id="pa-revenue" placeholder="e.g. 100000" oninput="calcProfit()"></div>
+            <div class="form-group"><label>Cost of Goods Sold</label><input type="number" id="pa-cogs" placeholder="e.g. 40000" oninput="calcProfit()"></div>
+            <div class="form-group"><label>Operating Expenses</label><input type="number" id="pa-opex" placeholder="e.g. 25000" oninput="calcProfit()"></div>
+            <div class="form-group"><label>Total Investment</label><input type="number" id="pa-invest" placeholder="e.g. 50000" oninput="calcProfit()"></div>
+        </div>
+        <div style="text-align:center;margin-top:8px;display:flex;gap:8px;justify-content:center;"><button class="action-btn clear" onclick="clearTool(2)">🗑️ Clear This Tool</button><button class="action-btn export" onclick="exportToExcel(2)">📊 Export to Excel</button></div>
+        <div class="results">
+            <div class="result-row"><span class="result-label">Gross Profit</span><span class="result-value" id="pa-gross">₹0</span></div>
+            <div class="result-row"><span class="result-label">Net Profit</span><span class="result-value green" id="pa-net">₹0</span></div>
+            <div class="result-row"><span class="result-label">Gross Margin</span><span class="result-value purple" id="pa-gm">0%</span></div>
+            <div class="result-row"><span class="result-label">Net Margin</span><span class="result-value" id="pa-nm">0%</span></div>
+            <div class="result-row"><span class="result-label">ROI</span><span class="result-value gold" id="pa-roi">0%</span></div>
+            <div class="result-row"><span class="result-label">Verdict</span><span id="pa-verdict"><span class="badge warning">Enter Data</span></span></div>
+        </div>
+        <div class="chart-box">
+            <h4>📊 Revenue → Costs → Profit Breakdown</h4>
+            <svg id="pa-chart-svg" viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div class="chart-legend" id="pa-chart-legend"></div>
+        </div>
+        <p class="info-text">💡 Benchmarks: Healthy net margin = 15-25%. ROI above 20% = Excellent. Gross margin below 30% = Too competitive.</p>
+        <div class="share-section">
+            <h4>📤 Apna result share karo</h4>
+            <div class="share-buttons">
+                <button class="action-btn whatsapp" onclick="shareWhatsApp(2)">📲 WhatsApp Pe Share</button>
+                <button class="action-btn copy" onclick="copyResults(2)">📋 Copy Results</button>
+            </div>
+        </div>
+        <div class="whatsapp-cta">
+            <p>💬 <span>In numbers ko implement karne mein help chahiye?</span> Hamari expert team se WhatsApp pe baat karo — bilkul free consultation!</p>
+            <a href="https://wa.me/916375351903?text=Hi%20GETDIGITALS.IN%2C%20I%20used%20your%20Business%20Profit%20Toolkit%20and%20need%20help%20implementing%20these%20numbers." target="_blank" class="action-btn whatsapp" style="text-decoration:none;" onclick="if(typeof fbq!=='undefined'){fbq('track','Lead');}">👉 WhatsApp Karo</a>
+        </div>
+    </div>
+
+    <div class="panel" id="panel-3">
+        <div class="highlight-box"><h3>Required Daily Sales</h3><div class="big" id="rg-daily-sales">0</div></div>
+        <div class="grid-2">
+            <div class="form-group"><label>Monthly Revenue Goal</label><input type="number" id="rg-goal" placeholder="e.g. 100000" oninput="calcGoal()"></div>
+            <div class="form-group"><label>Average Order Value</label><input type="number" id="rg-aov" placeholder="e.g. 800" oninput="calcGoal()"></div>
+            <div class="form-group"><label>Working Days per Month</label><input type="number" id="rg-days" value="26" oninput="calcGoal()"></div>
+            <div class="form-group"><label>Website Conversion Rate (%)</label><input type="number" id="rg-conv" placeholder="e.g. 2" oninput="calcGoal()"></div>
+        </div>
+        <div style="text-align:center;margin-top:8px;display:flex;gap:8px;justify-content:center;"><button class="action-btn clear" onclick="clearTool(3)">🗑️ Clear This Tool</button><button class="action-btn export" onclick="exportToExcel(3)">📊 Export to Excel</button></div>
+        <div class="results">
+            <div class="result-row"><span class="result-label">Orders Needed / Month</span><span class="result-value" id="rg-orders">0</span></div>
+            <div class="result-row"><span class="result-label">Orders Needed / Day</span><span class="result-value gold" id="rg-daily-ord">0</span></div>
+            <div class="result-row"><span class="result-label">Website Visitors Needed</span><span class="result-value" id="rg-traffic">0</span></div>
+            <div class="result-row"><span class="result-label">Daily Visitor Target</span><span class="result-value green" id="rg-daily-traf">0</span></div>
+        </div>
+        <div class="chart-box">
+            <h4>📊 Funnel — Visitors Needed to Hit Your Goal</h4>
+            <svg id="rg-chart-svg" viewBox="0 0 600 140" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div class="chart-legend" id="rg-chart-legend"></div>
+        </div>
+        <p class="info-text">💡 Reality Check: Average e-commerce conversion = 1.5-3%. To get 100 visitors/day: Run Instagram ads, SEO blog posts, or WhatsApp marketing.</p>
+        <div class="share-section">
+            <h4>📤 Apna result share karo</h4>
+            <div class="share-buttons">
+                <button class="action-btn whatsapp" onclick="shareWhatsApp(3)">📲 WhatsApp Pe Share</button>
+                <button class="action-btn copy" onclick="copyResults(3)">📋 Copy Results</button>
+            </div>
+        </div>
+        <div class="whatsapp-cta">
+            <p>💬 <span>In numbers ko implement karne mein help chahiye?</span> Hamari expert team se WhatsApp pe baat karo — bilkul free consultation!</p>
+            <a href="https://wa.me/916375351903?text=Hi%20GETDIGITALS.IN%2C%20I%20used%20your%20Business%20Profit%20Toolkit%20and%20need%20help%20implementing%20these%20numbers." target="_blank" class="action-btn whatsapp" style="text-decoration:none;" onclick="if(typeof fbq!=='undefined'){fbq('track','Lead');}">👉 WhatsApp Karo</a>
+        </div>
+    </div>
+
+    <div class="panel" id="panel-4">
+        <div class="verify-strip">
+            ⚠️ Rates category aur seller account ke hisaab se badalte hain.
+            <a href="https://seller.flipkart.com" target="_blank" rel="noopener">Apna live rate Seller Hub → Fee Structure mein verify karo</a>
+        </div>
+        <div class="highlight-box">
+            <h3>Net Profit per Order</h3>
+            <div class="big" id="fk-profit-big">₹0</div>
+        </div>
+
+        <h4 style="margin: 0 0 14px; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;">💰 Product &amp; Pricing</h4>
+        <div class="grid-3">
+            <div class="form-group"><label>Selling Price (₹)</label><input type="number" id="fk-price" placeholder="e.g. 999" oninput="calcFlipkart()"></div>
+            <div class="form-group"><label>Cost Price (₹)</label><input type="number" id="fk-cost" placeholder="e.g. 400" oninput="calcFlipkart()"></div>
+            <div class="form-group"><label>Packaging Cost (₹)</label><input type="number" id="fk-packaging" placeholder="e.g. 10" oninput="calcFlipkart()"></div>
+        </div>
+
+        <h4 style="margin: 22px 0 14px; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:1px; border-top:1px solid #334155; padding-top:20px;">📁 Category</h4>
+        <div class="form-group">
+            <label>Product Category</label>
+            <select id="fk-category" onchange="calcFlipkart()"></select>
+        </div>
+
+        <h4 style="margin: 22px 0 14px; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:1px; border-top:1px solid #334155; padding-top:20px;">📐 Weight &amp; Dimensions</h4>
+        <div class="grid-4">
+            <div class="form-group"><label>Weight (grams)</label><input type="number" id="fk-weight" placeholder="e.g. 300" oninput="calcFlipkart()"></div>
+            <div class="form-group"><label>Length (cm)</label><input type="number" id="fk-length" placeholder="e.g. 30" oninput="calcFlipkart()"></div>
+            <div class="form-group"><label>Breadth (cm)</label><input type="number" id="fk-breadth" placeholder="e.g. 20" oninput="calcFlipkart()"></div>
+            <div class="form-group"><label>Height (cm)</label><input type="number" id="fk-height" placeholder="e.g. 5" oninput="calcFlipkart()"></div>
+        </div>
+
+        <h4 style="margin: 22px 0 14px; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:1px; border-top:1px solid #334155; padding-top:20px;">🚚 Shipping Zone</h4>
+        <div class="segmented" id="fk-zone-group">
+            <button data-val="local" onclick="setSeg('fk-zone-group','zone','local')">Local</button>
+            <button data-val="zonal" onclick="setSeg('fk-zone-group','zone','zonal')">Zonal</button>
+            <button data-val="national" onclick="setSeg('fk-zone-group','zone','national')">National</button>
+        </div>
+
+        <h4 style="margin: 22px 0 14px; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;">📦 Fulfilment Type</h4>
+        <div class="segmented" id="fk-fulfilment-group">
+            <button data-val="fbf" onclick="setSeg('fk-fulfilment-group','fulfilment','fbf')">Flipkart Fulfilled (FBF)</button>
+            <button data-val="selfship" onclick="setSeg('fk-fulfilment-group','fulfilment','selfship')">Self-Ship</button>
+        </div>
+
+        <h4 style="margin: 22px 0 14px; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;">💳 Payment Type</h4>
+        <div class="segmented" id="fk-payment-group">
+            <button data-val="prepaid" onclick="setSeg('fk-payment-group','paymentType','prepaid')">Prepaid</button>
+            <button data-val="cod" onclick="setSeg('fk-payment-group','paymentType','cod')">COD</button>
+        </div>
+
+        <div class="results" style="margin-top:24px;">
+            <div class="result-row"><span class="result-label">Billable Weight (higher of actual/volumetric)</span><span class="result-value" id="fk-billable-weight">0 g</span></div>
+            <div class="result-row"><span class="result-label">Commission</span><span class="result-value red" id="fk-commission">₹0</span></div>
+            <div class="result-row"><span class="result-label">Fixed Fee</span><span class="result-value red" id="fk-fixed">₹0</span></div>
+            <div class="result-row"><span class="result-label">Collection Fee</span><span class="result-value red" id="fk-collection">₹0</span></div>
+            <div class="result-row"><span class="result-label">Shipping Fee</span><span class="result-value red" id="fk-shipping">₹0</span></div>
+            <div class="result-row"><span class="result-label">GST on Marketplace Fees (18%)</span><span class="result-value red" id="fk-gst">₹0</span></div>
+            <div class="result-row" style="border-top:2px solid #334155; margin-top:4px; padding-top:16px;"><span class="result-label">Total Marketplace Fee</span><span class="result-value gold" id="fk-total-fee">₹0</span></div>
+            <div class="result-row"><span class="result-label">Net Settlement (what Flipkart pays you)</span><span class="result-value" id="fk-settlement">₹0</span></div>
+            <div class="result-row"><span class="result-label">Profit</span><span class="result-value green" id="fk-profit">₹0</span></div>
+            <div class="result-row"><span class="result-label">Profit Margin %</span><span class="result-value green" id="fk-margin">0%</span></div>
+            <div class="result-row"><span class="result-label">Status</span><span id="fk-status"><span class="badge warning">Enter Data</span></span></div>
+        </div>
+
+        <div class="chart-box">
+            <h4>📊 Where Does Your ₹ Go?</h4>
+            <svg id="fk-chart-svg" viewBox="0 0 600 60" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div class="chart-legend" id="fk-chart-legend"></div>
+        </div>
+
+        <div style="text-align:center;margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+            <button class="action-btn clear" onclick="clearFlipkart()">🗑️ Clear</button>
+            <button class="action-btn export" onclick="exportFlipkartExcel()">📊 Excel</button>
+            <button class="action-btn whatsapp" onclick="shareFlipkartWhatsApp()">📲 WhatsApp Pe Share</button>
+        </div>
+
+        <p class="info-text">💡 Fixed fee, shipping aur collection fee ke exact numbers category, seller tier aur account-specific rate card ke hisaab se alag ho sakte hain. Ye calculator Flipkart ke published July 2026 structure (commission + fixed fee + collection fee + shipping fee, sab pe 18% GST) ke according hai — bade pricing decisions se pehle apna live rate card Seller Hub mein zaroor check karo. Fashion/Apparel/Footwear categories July 2026 se 0% commission par hain (koi price cap nahi). Rates last verified: <strong id="fk-last-verified"></strong></p>
+    </div>
+
+    <div class="footer">
+        <p>Powered by <span class="footer-brand">GETDIGITALS.IN</span></p>
+        <p style="margin-top:8px;">🔒 Your data never leaves this page. 100% privacy guaranteed.</p>
+        <p style="margin-top:4px;font-size:11px;">© 2026 GETDIGITALS.IN | Digital Products | Courses | Templates</p>
+    </div>
+</div>
+
+<a href="https://wa.me/916375351903?text=Hi%20GETDIGITALS.IN%2C%20I%20used%20your%20Business%20Profit%20Toolkit%20and%20need%20help%20implementing%20these%20numbers." target="_blank" class="float-whatsapp" title="Chat on WhatsApp" onclick="if(typeof fbq!=='undefined'){fbq('track','Lead');}">
+    <svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+<script>
+(function(){
+    function b64DecodeUnicode(str) {
+        return decodeURIComponent(atob(str).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+    }
+    var _payload = "ICAgIGNvbnN0IFdIQVRTQVBQX05VTUJFUiA9ICI5MTYzNzUzNTE5MDMiOwogICAgY29uc3QgV0VCU0lURV9VUkwgPSAiaHR0cHM6Ly9nZXRkaWdpdGFscy10b29sa2l0Lm5ldGxpZnkuYXBwLyI7CiAgICBjb25zdCBDVVJSRU5DWSA9IHsKICAgICAgICBJTlI6IHsgc3ltYm9sOiAn4oK5JywgcmF0ZTogMSwgZmxhZzogJ/Cfh67wn4ezJyB9LAogICAgICAgIFVTRDogeyBzeW1ib2w6ICckJywgcmF0ZTogMC4wMTIsIGZsYWc6ICfwn4e68J+HuCcgfSwKICAgICAgICBHQlA6IHsgc3ltYm9sOiAnwqMnLCByYXRlOiAwLjAwOTUsIGZsYWc6ICfwn4es8J+HpycgfSwKICAgICAgICBFVVI6IHsgc3ltYm9sOiAn4oKsJywgcmF0ZTogMC4wMTEsIGZsYWc6ICfwn4eq8J+HuicgfSwKICAgICAgICBBRUQ6IHsgc3ltYm9sOiAn2K8u2KUnLCByYXRlOiAwLjA0NCwgZmxhZzogJ/Cfh6bwn4eqJyB9LAogICAgICAgIENBRDogeyBzeW1ib2w6ICdDJCcsIHJhdGU6IDAuMDE2LCBmbGFnOiAn8J+HqPCfh6YnIH0KICAgIH07CiAgICBsZXQgYWN0aXZlQ3VycmVuY3kgPSAnSU5SJzsKICAgIGZ1bmN0aW9uIGZvcm1hdEN1cnJlbmN5KG5JbklucikgewogICAgICAgIGNvbnN0IGMgPSBDVVJSRU5DWVthY3RpdmVDdXJyZW5jeV07CiAgICAgICAgY29uc3QgY29udmVydGVkID0gKG5JbkluciB8fCAwKSAqIGMucmF0ZTsKICAgICAgICByZXR1cm4gYy5zeW1ib2wgKyBjb252ZXJ0ZWQudG9Mb2NhbGVTdHJpbmcoJ2VuLUlOJywgeyBtYXhpbXVtRnJhY3Rpb25EaWdpdHM6IGFjdGl2ZUN1cnJlbmN5ID09PSAnSU5SJyA/IDAgOiAyIH0pOwogICAgfQogICAgZnVuY3Rpb24gc3dpdGNoVGFiKG4pIHsKICAgICAgICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcudGFiJykuZm9yRWFjaCgodCxpKSA9PiB0LmNsYXNzTGlzdC50b2dnbGUoJ2FjdGl2ZScsIGk9PT1uKSk7CiAgICAgICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgnLnBhbmVsJykuZm9yRWFjaCgocCxpKSA9PiBwLmNsYXNzTGlzdC50b2dnbGUoJ2FjdGl2ZScsIGk9PT1uKSk7CiAgICB9CiAgICBmdW5jdGlvbiBjaGFuZ2VDdXJyZW5jeSgpIHsKICAgICAgICBjb25zdCBzZWxlY3QgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnY3VycmVuY3ktc2VsZWN0Jyk7CiAgICAgICAgY29uc3Qgb3B0aW9uID0gc2VsZWN0Lm9wdGlvbnNbc2VsZWN0LnNlbGVjdGVkSW5kZXhdOwogICAgICAgIGFjdGl2ZUN1cnJlbmN5ID0gb3B0aW9uLnZhbHVlOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdjdXJyLWZsYWcnKS50ZXh0Q29udGVudCA9IG9wdGlvbi5nZXRBdHRyaWJ1dGUoJ2RhdGEtZmxhZycpOwogICAgICAgIGNhbGNQcmljaW5nKCk7IGNhbGNCcmVha0V2ZW4oKTsgY2FsY1Byb2ZpdCgpOyBjYWxjR29hbCgpOwogICAgfQogICAgZnVuY3Rpb24gY2xlYXJUb29sKHRvb2xJbmRleCkgewogICAgICAgIGNvbnN0IHBhbmVsID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BhbmVsLScgKyB0b29sSW5kZXgpOwogICAgICAgIHBhbmVsLnF1ZXJ5U2VsZWN0b3JBbGwoJ2lucHV0W3R5cGU9Im51bWJlciJdJykuZm9yRWFjaChpbnAgPT4gewogICAgICAgICAgICBpZiAoaW5wLmlkICE9PSAncmctZGF5cycpIGlucC52YWx1ZSA9ICcnOwogICAgICAgIH0pOwogICAgICAgIGlmICh0b29sSW5kZXggPT09IDApIHsKICAgICAgICAgICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgnLnRlbXBsYXRlLWJ0bicpLmZvckVhY2goYnRuID0+IGJ0bi5jbGFzc0xpc3QucmVtb3ZlKCdhY3RpdmUnKSk7CiAgICAgICAgICAgIGNhbGNQcmljaW5nKCk7CiAgICAgICAgfQogICAgICAgIGVsc2UgaWYgKHRvb2xJbmRleCA9PT0gMSkgY2FsY0JyZWFrRXZlbigpOwogICAgICAgIGVsc2UgaWYgKHRvb2xJbmRleCA9PT0gMikgY2FsY1Byb2ZpdCgpOwogICAgICAgIGVsc2UgaWYgKHRvb2xJbmRleCA9PT0gMykgY2FsY0dvYWwoKTsKICAgIH0KICAgIGZ1bmN0aW9uIGNsZWFyQWxsRGF0YSgpIHsKICAgICAgICBpZiAoY29uZmlybSgnQXJlIHlvdSBzdXJlIHlvdSB3YW50IHRvIGNsZWFyIEFMTCBkYXRhIGFjcm9zcyBhbGwgNCB0b29scz8nKSkgewogICAgICAgICAgICBmb3IgKGxldCBpID0gMDsgaSA8IDQ7IGkrKykgY2xlYXJUb29sKGkpOwogICAgICAgIH0KICAgIH0KICAgIGZ1bmN0aW9uIHNob3dUb2FzdChtZXNzYWdlKSB7CiAgICAgICAgY29uc3QgdG9hc3QgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgndG9hc3QnKTsKICAgICAgICB0b2FzdC50ZXh0Q29udGVudCA9IG1lc3NhZ2U7CiAgICAgICAgdG9hc3QuY2xhc3NMaXN0LmFkZCgnc2hvdycpOwogICAgICAgIHNldFRpbWVvdXQoKCkgPT4gdG9hc3QuY2xhc3NMaXN0LnJlbW92ZSgnc2hvdycpLCAyNTAwKTsKICAgIH0KICAgIGNvbnN0IFRPT0xfRklMRV9OQU1FUyA9IFsnUHJpY2luZ19DYWxjdWxhdG9yJywgJ0JyZWFrX0V2ZW5fQ2FsY3VsYXRvcicsICdQcm9maXRfQW5hbHl6ZXInLCAnR29hbF9QbGFubmVyJ107CiAgICBmdW5jdGlvbiBjc3ZFc2NhcGUodmFsdWUpIHsKICAgICAgICBjb25zdCBzID0gU3RyaW5nKHZhbHVlID09IG51bGwgPyAnJyA6IHZhbHVlKTsKICAgICAgICByZXR1cm4gL1siLFxuXS8udGVzdChzKSA/ICciJyArIHMucmVwbGFjZSgvIi9nLCAnIiInKSArICciJyA6IHM7CiAgICB9CiAgICBmdW5jdGlvbiBleHBvcnRUb0V4Y2VsKHRvb2xJbmRleCkgewogICAgICAgIGNvbnN0IHBhbmVsID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BhbmVsLScgKyB0b29sSW5kZXgpOwogICAgICAgIGlmICghcGFuZWwpIHJldHVybjsKICAgICAgICBjb25zdCByb3dzID0gW1snR2V0RGlnaXRhbHMgQnVzaW5lc3MgUHJvZml0IFRvb2xraXQnXSwgW1RPT0xfRklMRV9OQU1FU1t0b29sSW5kZXhdLnJlcGxhY2UoL18vZywgJyAnKV0sIFsnR2VuZXJhdGVkJywgbmV3IERhdGUoKS50b0xvY2FsZVN0cmluZygnZW4tSU4nKV0sIFtdXTsKICAgICAgICByb3dzLnB1c2goWydJTlBVVFMnLCAnJ10pOwogICAgICAgIHBhbmVsLnF1ZXJ5U2VsZWN0b3JBbGwoJy5mb3JtLWdyb3VwJykuZm9yRWFjaChmdW5jdGlvbiAoZmcpIHsKICAgICAgICAgICAgY29uc3QgbGFiZWwgPSBmZy5xdWVyeVNlbGVjdG9yKCdsYWJlbCcpOwogICAgICAgICAgICBjb25zdCBpbnB1dCA9IGZnLnF1ZXJ5U2VsZWN0b3IoJ2lucHV0Jyk7CiAgICAgICAgICAgIGlmIChsYWJlbCAmJiBpbnB1dCAmJiBpbnB1dC5pZCkgewogICAgICAgICAgICAgICAgY29uc3QgbGFiZWxUZXh0ID0gbGFiZWwudGV4dENvbnRlbnQudHJpbSgpOwogICAgICAgICAgICAgICAgaWYgKGxhYmVsVGV4dCAmJiBsYWJlbFRleHQgIT09ICcuJykgcm93cy5wdXNoKFtsYWJlbFRleHQsIGlucHV0LnZhbHVlIHx8ICcnXSk7CiAgICAgICAgICAgIH0KICAgICAgICB9KTsKICAgICAgICByb3dzLnB1c2goW10pOwogICAgICAgIHJvd3MucHVzaChbJ1JFU1VMVFMnLCAnJ10pOwogICAgICAgIHBhbmVsLnF1ZXJ5U2VsZWN0b3JBbGwoJy5yZXN1bHQtcm93JykuZm9yRWFjaChmdW5jdGlvbiAocnIpIHsKICAgICAgICAgICAgY29uc3QgbGFiZWwgPSByci5xdWVyeVNlbGVjdG9yKCcucmVzdWx0LWxhYmVsJyk7CiAgICAgICAgICAgIGNvbnN0IHZhbHVlID0gcnIucXVlcnlTZWxlY3RvcignLnJlc3VsdC12YWx1ZScpIHx8IHJyLnF1ZXJ5U2VsZWN0b3IoJy5yZXN1bHQtcm93ID4gc3BhbjpsYXN0LWNoaWxkJyk7CiAgICAgICAgICAgIGlmIChsYWJlbCkgcm93cy5wdXNoKFtsYWJlbC50ZXh0Q29udGVudC50cmltKCksIHZhbHVlID8gdmFsdWUudGV4dENvbnRlbnQudHJpbSgpIDogJyddKTsKICAgICAgICB9KTsKICAgICAgICByb3dzLnB1c2goW10pOwogICAgICAgIHJvd3MucHVzaChbJ0dlbmVyYXRlZCBieScsIFdFQlNJVEVfVVJMXSk7CiAgICAgICAgY29uc3QgY3N2Q29udGVudCA9IHJvd3MubWFwKGZ1bmN0aW9uIChyb3cpIHsKICAgICAgICAgICAgcmV0dXJuIHJvdy5tYXAoY3N2RXNjYXBlKS5qb2luKCcsJyk7CiAgICAgICAgfSkuam9pbignXHJcbicpOwogICAgICAgIGNvbnN0IGJsb2IgPSBuZXcgQmxvYihbJ1x1RkVGRicgKyBjc3ZDb250ZW50XSwgeyB0eXBlOiAndGV4dC9jc3Y7Y2hhcnNldD11dGYtODsnIH0pOwogICAgICAgIGNvbnN0IHVybCA9IFVSTC5jcmVhdGVPYmplY3RVUkwoYmxvYik7CiAgICAgICAgY29uc3QgYSA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2EnKTsKICAgICAgICBhLmhyZWYgPSB1cmw7CiAgICAgICAgYS5kb3dubG9hZCA9ICdHZXREaWdpdGFsc18nICsgVE9PTF9GSUxFX05BTUVTW3Rvb2xJbmRleF0gKyAnXycgKyBuZXcgRGF0ZSgpLnRvSVNPU3RyaW5nKCkuc2xpY2UoMCwgMTApICsgJy5jc3YnOwogICAgICAgIGRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoYSk7CiAgICAgICAgYS5jbGljaygpOwogICAgICAgIGRvY3VtZW50LmJvZHkucmVtb3ZlQ2hpbGQoYSk7CiAgICAgICAgVVJMLnJldm9rZU9iamVjdFVSTCh1cmwpOwogICAgICAgIHNob3dUb2FzdCgnRXhjZWwgZmlsZSBkb3dubG9hZGVkISDwn5OKJyk7CiAgICB9CiAgICBjb25zdCBTRUxMRVJfVEVNUExBVEVTID0gewogICAgICAgIG1lZXNobzogewogICAgICAgICAgICBuYW1lOiAnTWVlc2hvIFNlbGxlcicsCiAgICAgICAgICAgIGZlZTogMCwgICAgICAgICAgLy8gTWVlc2hvIGNoYXJnZXMgbm8gdXBmcm9udCBjb21taXNzaW9uIG9uIG1vc3QgY2F0ZWdvcmllcyAoZmxhdCDigrkwKQogICAgICAgICAgICBzaGlwcGluZzogMCwgICAgICAvLyBNZWVzaG8gY29sbGVjdHMgc2hpcHBpbmcgZnJvbSB0aGUgYnV5ZXIgZGlyZWN0bHkg4oCUIG5vdCBhIHNlbGxlciBjb3N0CiAgICAgICAgICAgIGdzdDogNSwgICAgICAgICAgIC8vIE1vc3QgYXBwYXJlbCB1bmRlciDigrkxMDAwIGZhbGxzIGluIDUlIEdTVCBzbGFiCiAgICAgICAgICAgIG1hcmdpbjogMzAsCiAgICAgICAgICAgIHJldHVyblBjdDogMTUsCiAgICAgICAgICAgIHJ0b1BjdDogMjUsICAgICAgIC8vIE1lZXNobyBDT0Qgb3JkZXJzIHNlZSBub3RhYmx5IGhpZ2ggUlRPCiAgICAgICAgICAgIHBhY2thZ2luZzogMTAsCiAgICAgICAgICAgIHJldmVyc2VTaGlwOiAxODAgICAgLy8gTWVlc2hvIGNoYXJnZXMg4oK5MTgwIHJldmVyc2UgcGlja3VwIG9uIGdlbnVpbmUgcmV0dXJuczsgUlRPIGNvc3RzIOKCuTAgZXh0cmEgKG9ubHkgcGFja2FnaW5nIGlzIGxvc3QpCiAgICAgICAgfSwKICAgICAgICBhbWF6b246IHsKICAgICAgICAgICAgbmFtZTogJ0FtYXpvbiBTZWxsZXIgKEZCQSknLAogICAgICAgICAgICBmZWU6IDkwLCAgICAgICAgICAvLyBSZWZlcnJhbCBjb21taXNzaW9uIGFzIGEgZmxhdCDigrkgZXN0aW1hdGUgZm9yIGEgbWlkLXByaWNlZCBhcHBhcmVsIGl0ZW0gKEZCQSBmdWxmaWxsbWVudCBmZWUgaXMgYWxyZWFkeSBjb3VudGVkIHNlcGFyYXRlbHkgaW4gU2hpcHBpbmcgQ29zdCBiZWxvdykg4oCUIGNoZWNrIHlvdXIgY2F0ZWdvcnkncyBhY3R1YWwgZmVlIGNhcmQgYW5kIGFkanVzdAogICAgICAgICAgICBzaGlwcGluZzogNDUsICAgICAvLyBGQkEgZnVsZmlsbG1lbnQgZmVlIElTIGRlZHVjdGVkIGZyb20gc2VsbGVyIHBheW91dCDigJQgYSByZWFsIHNlbGxlciBjb3N0CiAgICAgICAgICAgIGdzdDogMTgsCiAgICAgICAgICAgIG1hcmdpbjogMzAsCiAgICAgICAgICAgIHJldHVyblBjdDogOCwKICAgICAgICAgICAgcnRvUGN0OiA1LCAgICAgICAgLy8gRkJBIGhhcyBsb3cgUlRPIHNpbmNlIEFtYXpvbiBjb250cm9scyBkZWxpdmVyeQogICAgICAgICAgICBwYWNrYWdpbmc6IDEwLAogICAgICAgICAgICByZXZlcnNlU2hpcDogNDAKICAgICAgICB9LAogICAgICAgIGZsaXBrYXJ0OiB7CiAgICAgICAgICAgIG5hbWU6ICdGbGlwa2FydCBTZWxsZXInLAogICAgICAgICAgICBmZWU6IDEyLCAgICAgICAgICAvLyBGbGF0IOKCuSBjb21taXNzaW9uIOKAlCBtYXRjaGVzIHlvdXIgb3duIHJlYWwgRmxpcGthcnQgZmVlIChhZGp1c3QgcGVyIGNhdGVnb3J5IGlmIGRpZmZlcmVudCkKICAgICAgICAgICAgc2hpcHBpbmc6IDAsICAgICAgLy8gU21hcnRzaGlwL0ZsaXBrYXJ0IEFzc3VyZWQgYWJzb3JicyBiYXNlIHNoaXBwaW5nCiAgICAgICAgICAgIGdzdDogMTgsCiAgICAgICAgICAgIG1hcmdpbjogMzAsCiAgICAgICAgICAgIHJldHVyblBjdDogMTAsCiAgICAgICAgICAgIHJ0b1BjdDogMTUsCiAgICAgICAgICAgIHBhY2thZ2luZzogMTAsCiAgICAgICAgICAgIHJldmVyc2VTaGlwOiAxODAgIC8vIEZsaXBrYXJ0IGFsc28gY2hhcmdlcyDigrkxODAgcmV2ZXJzZSBwaWNrdXAgb24gcmV0dXJuczsgUlRPIGNvc3RzIOKCuTAgZXh0cmEgKG9ubHkgcGFja2FnaW5nIGlzIGxvc3QpCiAgICAgICAgfSwKICAgICAgICBkcm9wc2hpcHBlcjogewogICAgICAgICAgICBuYW1lOiAnRHJvcHNoaXBwZXIgKE93biBXZWJzaXRlIC8gQ09EKScsCiAgICAgICAgICAgIGZlZTogMCwgICAgICAgICAgIC8vIE5vIG1hcmtldHBsYWNlIGNvbW1pc3Npb24gb24geW91ciBvd24gc2l0ZQogICAgICAgICAgICBzaGlwcGluZzogNjAsICAgICAvLyBUeXBpY2FsIDNQTCBjb3VyaWVyIGZvcndhcmQgc2hpcHBpbmcgZm9yIENPRAogICAgICAgICAgICBnc3Q6IDAsICAgICAgICAgICAvLyBTZXQgdG8geW91ciByZWFsIHNsYWIgaWYgcmVnaXN0ZXJlZCDigJQgbWFueSBzbWFsbCBEMkMgc2VsbGVycyBhcmUgYmVsb3cgdGhyZXNob2xkCiAgICAgICAgICAgIG1hcmdpbjogNDAsICAgICAgIC8vIE93bi1zaXRlIHNlbGxlcnMgdXN1YWxseSBwcmljZSBmb3IgYSBmYXR0ZXIgbWFyZ2luCiAgICAgICAgICAgIHJldHVyblBjdDogNSwKICAgICAgICAgICAgcnRvUGN0OiAyNSwgICAgICAgLy8gT3duLXNpdGUgQ09EIHRlbmRzIHRvIHJ1biBoaWdoIFJUTyB3aXRob3V0IE1lZXNoby9BbWF6b24tc3R5bGUgc2NyZWVuaW5nCiAgICAgICAgICAgIHBhY2thZ2luZzogMTAsCiAgICAgICAgICAgIHJldmVyc2VTaGlwOiAwICAgIC8vIFBlciB5b3VyIGNvdXJpZXI6IFJUTyBpc24ndCBjaGFyZ2VkIHNlcGFyYXRlbHksIG9ubHkgcGFja2FnaW5nIGlzIGxvc3QKICAgICAgICB9CiAgICB9OwogICAgZnVuY3Rpb24gbG9hZFRlbXBsYXRlKGtleSkgewogICAgICAgIGNvbnN0IHQgPSBTRUxMRVJfVEVNUExBVEVTW2tleV07CiAgICAgICAgaWYgKCF0KSByZXR1cm47CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BjLWZlZScpLnZhbHVlID0gdC5mZWU7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BjLXNoaXBwaW5nJykudmFsdWUgPSB0LnNoaXBwaW5nOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy1nc3QnKS52YWx1ZSA9IHQuZ3N0OwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy1tYXJnaW4nKS52YWx1ZSA9IHQubWFyZ2luOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy1yZXR1cm4nKS52YWx1ZSA9IHQucmV0dXJuUGN0OwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy1ydG8nKS52YWx1ZSA9IHQucnRvUGN0OwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy1wYWNrYWdpbmcnKS52YWx1ZSA9IHQucGFja2FnaW5nOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy1yZXZlcnNlLXNoaXAnKS52YWx1ZSA9IHQucmV2ZXJzZVNoaXA7CiAgICAgICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgnLnRlbXBsYXRlLWJ0bicpLmZvckVhY2goYnRuID0+IGJ0bi5jbGFzc0xpc3QucmVtb3ZlKCdhY3RpdmUnKSk7CiAgICAgICAgY29uc3QgYWN0aXZlQnRuID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcignLnRlbXBsYXRlLWJ0bi4nICsga2V5KTsKICAgICAgICBpZiAoYWN0aXZlQnRuKSBhY3RpdmVCdG4uY2xhc3NMaXN0LmFkZCgnYWN0aXZlJyk7CiAgICAgICAgY2FsY1ByaWNpbmcoKTsKICAgICAgICBzaG93VG9hc3QoYCR7dC5uYW1lfSB0ZW1wbGF0ZSBsb2FkZWQg4oCUIGFiIFByb2R1Y3QgQ29zdCBkYWFsb2ApOwogICAgfQogICAgZnVuY3Rpb24gZ2V0VG9vbFJlc3VsdHModG9vbEluZGV4KSB7CiAgICAgICAgbGV0IHRleHQgPSAiIjsKICAgICAgICBpZiAodG9vbEluZGV4ID09PSAwKSB7CiAgICAgICAgICAgIGNvbnN0IHByaWNlID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3ByaWNlLXJlc3VsdCcpLnRleHRDb250ZW50OwogICAgICAgICAgICBjb25zdCBjb3N0ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BjLXRvdGFsLWNvc3QnKS50ZXh0Q29udGVudDsKICAgICAgICAgICAgY29uc3QgcHJvZml0ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BjLXByb2ZpdCcpLnRleHRDb250ZW50OwogICAgICAgICAgICBjb25zdCBtYXJnaW4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtbWFyZ2luLXBjdCcpLnRleHRDb250ZW50OwogICAgICAgICAgICBjb25zdCBnc3QgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtZ3N0LWFtdCcpLnRleHRDb250ZW50OwogICAgICAgICAgICBjb25zdCBibGVuZGVkID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BjLWJsZW5kZWQtcHJvZml0JykudGV4dENvbnRlbnQ7CiAgICAgICAgICAgIGNvbnN0IG1heFJldHVybiA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy1tYXgtcmV0dXJuJykudGV4dENvbnRlbnQ7CiAgICAgICAgICAgIHRleHQgPSBg8J+TiiAqTXkgUHJvZHVjdCBQcmljaW5nIFJlc3VsdCpcblxu8J+SsCBGaW5hbCBQcmljZTogJHtwcmljZX1cbvCfk6YgVG90YWwgQ29zdDogJHtjb3N0fVxu8J+StSBQcm9maXQ6ICR7cHJvZml0fVxu8J+TiCBNYXJnaW46ICR7bWFyZ2lufVxu8J+nviBHU1Q6ICR7Z3N0fVxu4pm777iPIFJlYWwgUHJvZml0IEFmdGVyIFJldHVybi9SVE86ICR7YmxlbmRlZH1cbvCfjq8gTWF4IFJldHVybitSVE8gSSBDYW4gQWZmb3JkOiAke21heFJldHVybn1cblxuQ2FsY3VsYXRlIHlvdXJzOiAke1dFQlNJVEVfVVJMfWA7CiAgICAgICAgfSBlbHNlIGlmICh0b29sSW5kZXggPT09IDEpIHsKICAgICAgICAgICAgY29uc3QgdW5pdHMgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnYmUtdW5pdHMnKS50ZXh0Q29udGVudDsKICAgICAgICAgICAgY29uc3QgcmV2ZW51ZSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdiZS1yZXZlbnVlJykudGV4dENvbnRlbnQ7CiAgICAgICAgICAgIGNvbnN0IGRheXMgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnYmUtZGF5cycpLnRleHRDb250ZW50OwogICAgICAgICAgICBjb25zdCBtb250aGx5ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2JlLW1vbnRobHknKS50ZXh0Q29udGVudDsKICAgICAgICAgICAgdGV4dCA9IGDwn5OKICpNeSBCcmVhay1FdmVuIEFuYWx5c2lzKlxuXG7wn5OmIFVuaXRzIHRvIEJyZWFrLUV2ZW46ICR7dW5pdHN9XG7wn5KwIEJyZWFrLUV2ZW4gUmV2ZW51ZTogJHtyZXZlbnVlfVxu8J+ThSBEYXlzIHRvIEJyZWFrLUV2ZW46ICR7ZGF5c31cbvCfkrUgTW9udGhseSBQcm9maXQ6ICR7bW9udGhseX1cblxuQ2FsY3VsYXRlIHlvdXJzOiAke1dFQlNJVEVfVVJMfWA7CiAgICAgICAgfSBlbHNlIGlmICh0b29sSW5kZXggPT09IDIpIHsKICAgICAgICAgICAgY29uc3QgZ3Jvc3MgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGEtZ3Jvc3MnKS50ZXh0Q29udGVudDsKICAgICAgICAgICAgY29uc3QgbmV0ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BhLW5ldCcpLnRleHRDb250ZW50OwogICAgICAgICAgICBjb25zdCBnbSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYS1nbScpLnRleHRDb250ZW50OwogICAgICAgICAgICBjb25zdCBubSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYS1ubScpLnRleHRDb250ZW50OwogICAgICAgICAgICBjb25zdCByb2kgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGEtcm9pJykudGV4dENvbnRlbnQ7CiAgICAgICAgICAgIHRleHQgPSBg8J+TiiAqTXkgUHJvZml0IEFuYWx5c2lzKlxuXG7wn5KaIEdyb3NzIFByb2ZpdDogJHtncm9zc31cbvCfkrUgTmV0IFByb2ZpdDogJHtuZXR9XG7wn5OIIEdyb3NzIE1hcmdpbjogJHtnbX1cbvCfk4kgTmV0IE1hcmdpbjogJHtubX1cbvCfjq8gUk9JOiAke3JvaX1cblxuQ2FsY3VsYXRlIHlvdXJzOiAke1dFQlNJVEVfVVJMfWA7CiAgICAgICAgfSBlbHNlIGlmICh0b29sSW5kZXggPT09IDMpIHsKICAgICAgICAgICAgY29uc3QgZGFpbHkgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncmctZGFpbHktc2FsZXMnKS50ZXh0Q29udGVudDsKICAgICAgICAgICAgY29uc3Qgb3JkZXJzID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JnLW9yZGVycycpLnRleHRDb250ZW50OwogICAgICAgICAgICBjb25zdCB0cmFmZmljID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JnLXRyYWZmaWMnKS50ZXh0Q29udGVudDsKICAgICAgICAgICAgY29uc3QgZGFpbHlUcmFmID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JnLWRhaWx5LXRyYWYnKS50ZXh0Q29udGVudDsKICAgICAgICAgICAgdGV4dCA9IGDwn5OKICpNeSBSZXZlbnVlIEdvYWwgUGxhbipcblxu8J+OryBEYWlseSBTYWxlcyBOZWVkZWQ6ICR7ZGFpbHl9XG7wn5OmIE1vbnRobHkgT3JkZXJzOiAke29yZGVyc31cbvCfkaUgVG90YWwgVmlzaXRvcnMgTmVlZGVkOiAke3RyYWZmaWN9XG7wn5OFIERhaWx5IFZpc2l0b3IgVGFyZ2V0OiAke2RhaWx5VHJhZn1cblxuQ2FsY3VsYXRlIHlvdXJzOiAke1dFQlNJVEVfVVJMfWA7CiAgICAgICAgfQogICAgICAgIHJldHVybiB0ZXh0OwogICAgfQogICAgZnVuY3Rpb24gc2hhcmVXaGF0c0FwcCh0b29sSW5kZXgpIHsKICAgICAgICBjb25zdCB0ZXh0ID0gZ2V0VG9vbFJlc3VsdHModG9vbEluZGV4KTsKICAgICAgICB3aW5kb3cub3BlbihgaHR0cHM6Ly93YS5tZS8/dGV4dD0ke2VuY29kZVVSSUNvbXBvbmVudCh0ZXh0KX1gLCAnX2JsYW5rJyk7CiAgICB9CiAgICBmdW5jdGlvbiBjb3B5UmVzdWx0cyh0b29sSW5kZXgpIHsKICAgICAgICBjb25zdCB0ZXh0ID0gZ2V0VG9vbFJlc3VsdHModG9vbEluZGV4KS5yZXBsYWNlKC9cXG4vZywgIlxuIik7CiAgICAgICAgbmF2aWdhdG9yLmNsaXBib2FyZC53cml0ZVRleHQodGV4dCkudGhlbigoKSA9PiB7CiAgICAgICAgICAgIHNob3dUb2FzdCgi4pyFIFJlc3VsdHMgY29waWVkIHRvIGNsaXBib2FyZCEiKTsKICAgICAgICB9KS5jYXRjaCgoKSA9PiB7CiAgICAgICAgICAgIHNob3dUb2FzdCgi4p2MIENvdWxkIG5vdCBjb3B5LiBUcnkgV2hhdHNBcHAgc2hhcmUuIik7CiAgICAgICAgfSk7CiAgICB9CiAgICBmdW5jdGlvbiBjYWxjUHJpY2luZygpIHsKICAgICAgICBjb25zdCBjb3N0ID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtY29zdCcpLnZhbHVlKSB8fCAwOwogICAgICAgIGNvbnN0IHNoaXBwaW5nID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtc2hpcHBpbmcnKS52YWx1ZSkgfHwgMDsKICAgICAgICBjb25zdCBmZWVGbGF0ID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtZmVlJykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgZ3N0UGN0ID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtZ3N0JykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgbWFyZ2luUGN0ID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtbWFyZ2luJykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgcmV0dXJuUGN0ID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtcmV0dXJuJykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgcnRvUGN0ID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtcnRvJykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgcGFja2FnaW5nID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtcGFja2FnaW5nJykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgcmV2ZXJzZVNoaXAgPSBwYXJzZUZsb2F0KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy1yZXZlcnNlLXNoaXAnKS52YWx1ZSkgfHwgMDsKICAgICAgICBjb25zdCBiYXNlQ29zdCA9IGNvc3QgKyBzaGlwcGluZzsgLy8gb25seSBjb3N0cyBZT1UgYWN0dWFsbHkgYmVhciAoc2hpcHBpbmcgPSAwIG9uIE1lZXNoby9GbGlwa2FydCwgYnV5ZXIgcGF5cykKICAgICAgICBjb25zdCBsb3NzUGVyUmV0dXJuID0gcGFja2FnaW5nICsgcmV2ZXJzZVNoaXA7CiAgICAgICAgY29uc3QgbG9zc1BlclJUTyA9IHBhY2thZ2luZzsKICAgICAgICBjb25zdCByZXR1cm5GcmFjdGlvbiA9IE1hdGgubWluKHJldHVyblBjdCAvIDEwMCwgMSk7CiAgICAgICAgY29uc3QgcnRvRnJhY3Rpb24gPSBNYXRoLm1pbihydG9QY3QgLyAxMDAsIDEpOwogICAgICAgIGNvbnN0IGZhaWxlZEZyYWN0aW9uID0gTWF0aC5taW4ocmV0dXJuRnJhY3Rpb24gKyBydG9GcmFjdGlvbiwgMSk7CiAgICAgICAgY29uc3Qgc3VjY2Vzc0ZyYWN0aW9uID0gMSAtIGZhaWxlZEZyYWN0aW9uOwogICAgICAgIGNvbnN0IGV4cGVjdGVkTG9zc1BlclNoaXBwZWRPcmRlciA9IChyZXR1cm5GcmFjdGlvbiAqIGxvc3NQZXJSZXR1cm4pICsgKHJ0b0ZyYWN0aW9uICogbG9zc1BlclJUTyk7CiAgICAgICAgY29uc3QgcmV0dXJuUnRvQnVmZmVyID0gc3VjY2Vzc0ZyYWN0aW9uID4gMCA/IGV4cGVjdGVkTG9zc1BlclNoaXBwZWRPcmRlciAvIHN1Y2Nlc3NGcmFjdGlvbiA6IDA7CiAgICAgICAgLy8gUGxhdGZvcm0gZmVlIGlzIGEgZmxhdCBydXBlZSBjaGFyZ2UgKG5vdCBhICUgb2YgcHJpY2UpIOKAlCBzbyBpdCBnb2VzCiAgICAgICAgLy8gc3RyYWlnaHQgaW50byB0aGUgY29zdCBiYXNlLCBzYW1lIGFzIHByb2R1Y3QgY29zdCBvciBwYWNrYWdpbmcuCiAgICAgICAgY29uc3QgYWRqdXN0ZWRDb3N0ID0gYmFzZUNvc3QgKyBmZWVGbGF0ICsgcmV0dXJuUnRvQnVmZmVyOwogICAgICAgIGNvbnN0IGRpdmlzb3IgPSAxIC0gKG1hcmdpblBjdC8xMDApOwogICAgICAgIGxldCBzZWxsaW5nUHJpY2UgPSBkaXZpc29yID4gMCA/IGFkanVzdGVkQ29zdCAvIGRpdmlzb3IgOiAwOwogICAgICAgIGNvbnN0IGZlZUFtdCA9IGZlZUZsYXQ7CiAgICAgICAgY29uc3QgZ3N0QW10ID0gc2VsbGluZ1ByaWNlICogKGdzdFBjdC8xMDApOwogICAgICAgIGNvbnN0IGZpbmFsUHJpY2UgPSBzZWxsaW5nUHJpY2UgKyBnc3RBbXQ7CiAgICAgICAgY29uc3QgcHJvZml0ID0gc2VsbGluZ1ByaWNlIC0gYmFzZUNvc3QgLSBmZWVBbXQ7CiAgICAgICAgY29uc3QgYWN0dWFsTWFyZ2luID0gc2VsbGluZ1ByaWNlID4gMCA/IChwcm9maXQgLyBzZWxsaW5nUHJpY2UpICogMTAwIDogMDsKICAgICAgICBjb25zdCBibGVuZGVkUHJvZml0ID0gKHN1Y2Nlc3NGcmFjdGlvbiAqIHByb2ZpdCkgLSAocmV0dXJuRnJhY3Rpb24gKiBsb3NzUGVyUmV0dXJuKSAtIChydG9GcmFjdGlvbiAqIGxvc3NQZXJSVE8pOwogICAgICAgIGNvbnN0IHRydWVNYXJnaW5QY3QgPSBzZWxsaW5nUHJpY2UgPiAwID8gKGJsZW5kZWRQcm9maXQgLyBzZWxsaW5nUHJpY2UpICogMTAwIDogMDsKICAgICAgICBsZXQgbWF4QWZmb3JkYWJsZVBjdCA9IDA7CiAgICAgICAgaWYgKHByb2ZpdCA+IDApIHsKICAgICAgICAgICAgaWYgKGZhaWxlZEZyYWN0aW9uID4gMCkgewogICAgICAgICAgICAgICAgY29uc3QgcmV0dXJuU2hhcmUgPSByZXR1cm5GcmFjdGlvbiAvIGZhaWxlZEZyYWN0aW9uOwogICAgICAgICAgICAgICAgY29uc3QgcnRvU2hhcmUgPSBydG9GcmFjdGlvbiAvIGZhaWxlZEZyYWN0aW9uOwogICAgICAgICAgICAgICAgY29uc3Qgd2VpZ2h0ZWRMb3NzUGVyRmFpbGVkVW5pdCA9IChyZXR1cm5TaGFyZSAqIGxvc3NQZXJSZXR1cm4pICsgKHJ0b1NoYXJlICogbG9zc1BlclJUTyk7CiAgICAgICAgICAgICAgICBtYXhBZmZvcmRhYmxlUGN0ID0gKHByb2ZpdCAvIChwcm9maXQgKyB3ZWlnaHRlZExvc3NQZXJGYWlsZWRVbml0KSkgKiAxMDA7CiAgICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgICAgICBtYXhBZmZvcmRhYmxlUGN0ID0gKHByb2ZpdCAvIChwcm9maXQgKyBsb3NzUGVyUlRPKSkgKiAxMDA7CiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3ByaWNlLXJlc3VsdCcpLnRleHRDb250ZW50ID0gZm9ybWF0Q3VycmVuY3koZmluYWxQcmljZSk7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BjLXRvdGFsLWNvc3QnKS50ZXh0Q29udGVudCA9IGZvcm1hdEN1cnJlbmN5KGJhc2VDb3N0KTsKICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtZmVlLWFtdCcpLnRleHRDb250ZW50ID0gZm9ybWF0Q3VycmVuY3koZmVlQW10KTsKICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtZ3N0LWFtdCcpLnRleHRDb250ZW50ID0gZm9ybWF0Q3VycmVuY3koZ3N0QW10KTsKICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtZmluYWwtcHJpY2UnKS50ZXh0Q29udGVudCA9IGZvcm1hdEN1cnJlbmN5KGZpbmFsUHJpY2UpOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy1wcm9maXQnKS50ZXh0Q29udGVudCA9IGZvcm1hdEN1cnJlbmN5KHByb2ZpdCk7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BjLW1hcmdpbi1wY3QnKS50ZXh0Q29udGVudCA9IGFjdHVhbE1hcmdpbi50b0ZpeGVkKDEpICsgJyUnOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy1sb3NzLXJldHVybicpLnRleHRDb250ZW50ID0gZm9ybWF0Q3VycmVuY3kobG9zc1BlclJldHVybik7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BjLWxvc3MtcnRvJykudGV4dENvbnRlbnQgPSBmb3JtYXRDdXJyZW5jeShsb3NzUGVyUlRPKTsKICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtcmV0dXJuLWJ1ZmZlcicpLnRleHRDb250ZW50ID0gZm9ybWF0Q3VycmVuY3kocmV0dXJuUnRvQnVmZmVyKTsKICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtYmxlbmRlZC1wcm9maXQnKS50ZXh0Q29udGVudCA9IGZvcm1hdEN1cnJlbmN5KGJsZW5kZWRQcm9maXQpOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYy10cnVlLW1hcmdpbi1wY3QnKS50ZXh0Q29udGVudCA9IHRydWVNYXJnaW5QY3QudG9GaXhlZCgxKSArICclJzsKICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtbWF4LXJldHVybicpLnRleHRDb250ZW50ID0gbWF4QWZmb3JkYWJsZVBjdC50b0ZpeGVkKDEpICsgJyUnOwogICAgICAgIGNvbnN0IHN0YXR1c0VsID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BjLXN0YXR1cycpOwogICAgICAgIGlmIChwcm9maXQgPD0gMCkgc3RhdHVzRWwuaW5uZXJIVE1MID0gJzxzcGFuIGNsYXNzPSJiYWRnZSBkYW5nZXIiPkxvc3MgRXZlbiBXaXRob3V0IFJldHVybnMhPC9zcGFuPic7CiAgICAgICAgZWxzZSBpZiAoYmxlbmRlZFByb2ZpdCA8IDApIHN0YXR1c0VsLmlubmVySFRNTCA9ICc8c3BhbiBjbGFzcz0iYmFkZ2UgZGFuZ2VyIj5Mb3NpbmcgTW9uZXkgQWZ0ZXIgUmV0dXJucy9SVE8hPC9zcGFuPic7CiAgICAgICAgZWxzZSBpZiAoYmxlbmRlZFByb2ZpdCA8IHByb2ZpdCAqIDAuNSkgc3RhdHVzRWwuaW5uZXJIVE1MID0gJzxzcGFuIGNsYXNzPSJiYWRnZSB3YXJuaW5nIj5SZXR1cm5zIEVhdGluZyBIYWxmIFlvdXIgUHJvZml0PC9zcGFuPic7CiAgICAgICAgZWxzZSBzdGF0dXNFbC5pbm5lckhUTUwgPSAnPHNwYW4gY2xhc3M9ImJhZGdlIHN1Y2Nlc3MiPkhlYWx0aHkg4oCUIFJldHVybi9SVE8gQ29zdCBQcmljZWQgSW48L3NwYW4+JzsKICAgICAgICByZW5kZXJQcmljaW5nQ2hhcnQoYmFzZUNvc3QsIGZlZUFtdCwgZ3N0QW10LCByZXR1cm5SdG9CdWZmZXIsIHByb2ZpdCAtIHJldHVyblJ0b0J1ZmZlciwgZmluYWxQcmljZSk7CiAgICB9CiAgICBmdW5jdGlvbiBjYWxjQnJlYWtFdmVuKCkgewogICAgICAgIGNvbnN0IGZpeGVkID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnYmUtZml4ZWQnKS52YWx1ZSkgfHwgMDsKICAgICAgICBjb25zdCB2YXJpYWJsZSA9IHBhcnNlRmxvYXQoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2JlLXZhcmlhYmxlJykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgcHJpY2UgPSBwYXJzZUZsb2F0KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdiZS1wcmljZScpLnZhbHVlKSB8fCAwOwogICAgICAgIGNvbnN0IGRhaWx5ID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnYmUtZGFpbHknKS52YWx1ZSkgfHwgMDsKICAgICAgICBjb25zdCBjb250cmlidXRpb24gPSBwcmljZSAtIHZhcmlhYmxlOwogICAgICAgIGNvbnN0IHVuaXRzID0gY29udHJpYnV0aW9uID4gMCA/IE1hdGguY2VpbChmaXhlZCAvIGNvbnRyaWJ1dGlvbikgOiAwOwogICAgICAgIGNvbnN0IHJldmVudWUgPSB1bml0cyAqIHByaWNlOwogICAgICAgIGNvbnN0IGRheXMgPSBkYWlseSA+IDAgPyBNYXRoLmNlaWwodW5pdHMgLyBkYWlseSkgOiAwOwogICAgICAgIGNvbnN0IG1vbnRobHlQcm9maXQgPSBkYWlseSAqIDMwICogY29udHJpYnV0aW9uIC0gZml4ZWQ7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2JlLXVuaXRzJykudGV4dENvbnRlbnQgPSB1bml0cy50b0xvY2FsZVN0cmluZygnZW4tSU4nKTsKICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnYmUtcmV2ZW51ZScpLnRleHRDb250ZW50ID0gZm9ybWF0Q3VycmVuY3kocmV2ZW51ZSk7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2JlLWRheXMnKS50ZXh0Q29udGVudCA9IGRheXMgKyAnIGRheXMnOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdiZS1tb250aGx5JykudGV4dENvbnRlbnQgPSBmb3JtYXRDdXJyZW5jeShtb250aGx5UHJvZml0KTsKICAgICAgICBjb25zdCBzdGF0dXNFbCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdiZS1zdGF0dXMnKTsKICAgICAgICBpZiAoY29udHJpYnV0aW9uIDw9IDApIHN0YXR1c0VsLmlubmVySFRNTCA9ICc8c3BhbiBjbGFzcz0iYmFkZ2UgZGFuZ2VyIj5Mb3NzIHBlciBVbml0ITwvc3Bhbj4nOwogICAgICAgIGVsc2UgaWYgKG1vbnRobHlQcm9maXQgPiA1MDAwMCkgc3RhdHVzRWwuaW5uZXJIVE1MID0gJzxzcGFuIGNsYXNzPSJiYWRnZSBzdWNjZXNzIj5IaWdobHkgUHJvZml0YWJsZTwvc3Bhbj4nOwogICAgICAgIGVsc2UgaWYgKG1vbnRobHlQcm9maXQgPiAwKSBzdGF0dXNFbC5pbm5lckhUTUwgPSAnPHNwYW4gY2xhc3M9ImJhZGdlIHN1Y2Nlc3MiPlByb2ZpdGFibGU8L3NwYW4+JzsKICAgICAgICBlbHNlIGlmIChtb250aGx5UHJvZml0IDwgMCkgc3RhdHVzRWwuaW5uZXJIVE1MID0gJzxzcGFuIGNsYXNzPSJiYWRnZSB3YXJuaW5nIj5CZWxvdyBUYXJnZXQ8L3NwYW4+JzsKICAgICAgICBlbHNlIHN0YXR1c0VsLmlubmVySFRNTCA9ICc8c3BhbiBjbGFzcz0iYmFkZ2Ugd2FybmluZyI+RW50ZXIgRGF0YTwvc3Bhbj4nOwogICAgICAgIHJlbmRlckJyZWFrRXZlbkNoYXJ0KGZpeGVkLCB2YXJpYWJsZSwgcHJpY2UsIHVuaXRzKTsKICAgIH0KICAgIGZ1bmN0aW9uIGNhbGNQcm9maXQoKSB7CiAgICAgICAgY29uc3QgcmV2ZW51ZSA9IHBhcnNlRmxvYXQoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BhLXJldmVudWUnKS52YWx1ZSkgfHwgMDsKICAgICAgICBjb25zdCBjb2dzID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGEtY29ncycpLnZhbHVlKSB8fCAwOwogICAgICAgIGNvbnN0IG9wZXggPSBwYXJzZUZsb2F0KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYS1vcGV4JykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgaW52ZXN0ID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGEtaW52ZXN0JykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgZ3Jvc3MgPSByZXZlbnVlIC0gY29nczsKICAgICAgICBjb25zdCBuZXQgPSBncm9zcyAtIG9wZXg7CiAgICAgICAgY29uc3QgZ20gPSByZXZlbnVlID4gMCA/IChncm9zcyAvIHJldmVudWUpICogMTAwIDogMDsKICAgICAgICBjb25zdCBubSA9IHJldmVudWUgPiAwID8gKG5ldCAvIHJldmVudWUpICogMTAwIDogMDsKICAgICAgICBjb25zdCByb2kgPSBpbnZlc3QgPiAwID8gKG5ldCAvIGludmVzdCkgKiAxMDAgOiAwOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYS1ncm9zcycpLnRleHRDb250ZW50ID0gZm9ybWF0Q3VycmVuY3koZ3Jvc3MpOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYS1uZXQnKS50ZXh0Q29udGVudCA9IGZvcm1hdEN1cnJlbmN5KG5ldCk7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3BhLWdtJykudGV4dENvbnRlbnQgPSBnbS50b0ZpeGVkKDEpICsgJyUnOwogICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYS1ubScpLnRleHRDb250ZW50ID0gbm0udG9GaXhlZCgxKSArICclJzsKICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGEtcm9pJykudGV4dENvbnRlbnQgPSByb2kudG9GaXhlZCgxKSArICclJzsKICAgICAgICBjb25zdCB2ZXJkaWN0RWwgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGEtdmVyZGljdCcpOwogICAgICAgIGlmIChuZXQgPiAwICYmIHJvaSA+IDMwKSB2ZXJkaWN0RWwuaW5uZXJIVE1MID0gJzxzcGFuIGNsYXNzPSJiYWRnZSBzdWNjZXNzIj5PdXRzdGFuZGluZzwvc3Bhbj4nOwogICAgICAgIGVsc2UgaWYgKG5ldCA+IDAgJiYgcm9pID4gMTUpIHZlcmRpY3RFbC5pbm5lckhUTUwgPSAnPHNwYW4gY2xhc3M9ImJhZGdlIHN1Y2Nlc3MiPkV4Y2VsbGVudDwvc3Bhbj4nOwogICAgICAgIGVsc2UgaWYgKG5ldCA+IDApIHZlcmRpY3RFbC5pbm5lckhUTUwgPSAnPHNwYW4gY2xhc3M9ImJhZGdlIHN1Y2Nlc3MiPlByb2ZpdGFibGU8L3NwYW4+JzsKICAgICAgICBlbHNlIGlmIChuZXQgPCAwKSB2ZXJkaWN0RWwuaW5uZXJIVE1MID0gJzxzcGFuIGNsYXNzPSJiYWRnZSBkYW5nZXIiPkxvc3MgTWFraW5nPC9zcGFuPic7CiAgICAgICAgZWxzZSB2ZXJkaWN0RWwuaW5uZXJIVE1MID0gJzxzcGFuIGNsYXNzPSJiYWRnZSB3YXJuaW5nIj5FbnRlciBEYXRhPC9zcGFuPic7CiAgICAgICAgcmVuZGVyUHJvZml0Q2hhcnQocmV2ZW51ZSwgY29ncywgb3BleCwgbmV0KTsKICAgIH0KICAgIGZ1bmN0aW9uIGNhbGNHb2FsKCkgewogICAgICAgIGNvbnN0IGdvYWwgPSBwYXJzZUZsb2F0KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyZy1nb2FsJykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgYW92ID0gcGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncmctYW92JykudmFsdWUpIHx8IDA7CiAgICAgICAgY29uc3QgZGF5cyA9IHBhcnNlRmxvYXQoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JnLWRheXMnKS52YWx1ZSkgfHwgMjY7CiAgICAgICAgY29uc3QgY29udiA9IHBhcnNlRmxvYXQoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JnLWNvbnYnKS52YWx1ZSkgfHwgMDsKICAgICAgICBjb25zdCBvcmRlcnMgPSBhb3YgPiAwID8gTWF0aC5jZWlsKGdvYWwgLyBhb3YpIDogMDsKICAgICAgICBjb25zdCBkYWlseU9yZCA9IGRheXMgPiAwID8gTWF0aC5jZWlsKG9yZGVycyAvIGRheXMpIDogMDsKICAgICAgICBjb25zdCB0cmFmZmljID0gY29udiA+IDAgPyBNYXRoLmNlaWwob3JkZXJzIC8gKGNvbnYvMTAwKSkgOiAwOwogICAgICAgIGNvbnN0IGRhaWx5VHJhZiA9IGRheXMgPiAwID8gTWF0aC5jZWlsKHRyYWZmaWMgLyBkYXlzKSA6IDA7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JnLWRhaWx5LXNhbGVzJykudGV4dENvbnRlbnQgPSBkYWlseU9yZDsKICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncmctb3JkZXJzJykudGV4dENvbnRlbnQgPSBvcmRlcnMudG9Mb2NhbGVTdHJpbmcoJ2VuLUlOJyk7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JnLWRhaWx5LW9yZCcpLnRleHRDb250ZW50ID0gZGFpbHlPcmQ7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JnLXRyYWZmaWMnKS50ZXh0Q29udGVudCA9IHRyYWZmaWMudG9Mb2NhbGVTdHJpbmcoJ2VuLUlOJyk7CiAgICAgICAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JnLWRhaWx5LXRyYWYnKS50ZXh0Q29udGVudCA9IGRhaWx5VHJhZi50b0xvY2FsZVN0cmluZygnZW4tSU4nKTsKICAgICAgICByZW5kZXJHb2FsQ2hhcnQodHJhZmZpYywgb3JkZXJzKTsKICAgIH0KICAgIGNvbnN0IENIQVJUX0NPTE9SUyA9IHsgY29zdDogJyM2NDc0OGInLCBmZWU6ICcjZjg3MTcxJywgZ3N0OiAnI2ZiYmYyNCcsIGJ1ZmZlcjogJyNjMDg0ZmMnLCBwcm9maXQ6ICcjNGFkZTgwJywgcmV2ZW51ZTogJyMzOGJkZjgnLCBjb2dzOiAnI2Y4NzE3MScsIG9wZXg6ICcjZmJiZjI0JywgbmV0OiAnIzRhZGU4MCcsIG5ldE5lZzogJyNmODcxNzEnLCB2aXNpdG9yczogJyMzOGJkZjgnLCBvcmRlcnM6ICcjNGFkZTgwJyB9OwogICAgZnVuY3Rpb24gc2V0TGVnZW5kKGVsSWQsIGl0ZW1zKSB7CiAgICAgICAgY29uc3QgZWwgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZChlbElkKTsKICAgICAgICBpZiAoIWVsKSByZXR1cm47CiAgICAgICAgZWwuaW5uZXJIVE1MID0gaXRlbXMubWFwKGZ1bmN0aW9uIChpdCkgewogICAgICAgICAgICByZXR1cm4gJzxkaXYgY2xhc3M9ImNoYXJ0LWxlZ2VuZC1pdGVtIj48c3BhbiBjbGFzcz0iY2hhcnQtbGVnZW5kLXN3YXRjaCIgc3R5bGU9ImJhY2tncm91bmQ6JyArIGl0LmNvbG9yICsgJyI+PC9zcGFuPicgKyBpdC5sYWJlbCArICc8L2Rpdj4nOwogICAgICAgIH0pLmpvaW4oJycpOwogICAgfQogICAgZnVuY3Rpb24gcmVuZGVyUHJpY2luZ0NoYXJ0KGJhc2VDb3N0LCBmZWVBbXQsIGdzdEFtdCwgYnVmZmVyLCBtYXJnaW5BbXQsIGZpbmFsUHJpY2UpIHsKICAgICAgICBjb25zdCBzdmcgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGMtY2hhcnQtc3ZnJyk7CiAgICAgICAgaWYgKCFzdmcpIHJldHVybjsKICAgICAgICBpZiAoIWZpbmFsUHJpY2UgfHwgZmluYWxQcmljZSA8PSAwKSB7CiAgICAgICAgICAgIHN2Zy5pbm5lckhUTUwgPSAnPHRleHQgeD0iMzAwIiB5PSIzNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzY0NzQ4YiIgZm9udC1zaXplPSIxMyI+RmlsbCBpbiB0aGUgY2FsY3VsYXRvciB0byBzZWUgeW91ciBwcmljZSBicmVha2Rvd248L3RleHQ+JzsKICAgICAgICAgICAgc2V0TGVnZW5kKCdwYy1jaGFydC1sZWdlbmQnLCBbXSk7CiAgICAgICAgICAgIHJldHVybjsKICAgICAgICB9CiAgICAgICAgY29uc3Qgc2VnbWVudHMgPSBbCiAgICAgICAgICAgIHsga2V5OiAnY29zdCcsIGxhYmVsOiAnUHJvZHVjdCArIFNoaXBwaW5nIENvc3QnLCB2YWx1ZTogTWF0aC5tYXgoYmFzZUNvc3QsIDApIH0sCiAgICAgICAgICAgIHsga2V5OiAnZmVlJywgbGFiZWw6ICdQbGF0Zm9ybSBGZWUnLCB2YWx1ZTogTWF0aC5tYXgoZmVlQW10LCAwKSB9LAogICAgICAgICAgICB7IGtleTogJ2dzdCcsIGxhYmVsOiAnR1NUJywgdmFsdWU6IE1hdGgubWF4KGdzdEFtdCwgMCkgfSwKICAgICAgICAgICAgeyBrZXk6ICdidWZmZXInLCBsYWJlbDogJ1JldHVybi9SVE8gUmVzZXJ2ZScsIHZhbHVlOiBNYXRoLm1heChidWZmZXIsIDApIH0sCiAgICAgICAgICAgIHsga2V5OiAncHJvZml0JywgbGFiZWw6ICdZb3VyIFJlYWwgUHJvZml0JywgdmFsdWU6IE1hdGgubWF4KG1hcmdpbkFtdCwgMCkgfQogICAgICAgIF07CiAgICAgICAgY29uc3QgdG90YWwgPSBzZWdtZW50cy5yZWR1Y2UoZnVuY3Rpb24gKHMsIHNlZykgeyByZXR1cm4gcyArIHNlZy52YWx1ZTsgfSwgMCkgfHwgMTsKICAgICAgICBsZXQgeCA9IDA7CiAgICAgICAgbGV0IHJlY3RzID0gJyc7CiAgICAgICAgc2VnbWVudHMuZm9yRWFjaChmdW5jdGlvbiAoc2VnKSB7CiAgICAgICAgICAgIGNvbnN0IHcgPSAoc2VnLnZhbHVlIC8gdG90YWwpICogNjAwOwogICAgICAgICAgICBpZiAodyA+IDAuNSkgewogICAgICAgICAgICAgICAgcmVjdHMgKz0gJzxyZWN0IHg9IicgKyB4LnRvRml4ZWQoMSkgKyAnIiB5PSIxMCIgd2lkdGg9IicgKyB3LnRvRml4ZWQoMSkgKyAnIiBoZWlnaHQ9IjQwIiBmaWxsPSInICsgQ0hBUlRfQ09MT1JTW3NlZy5rZXldICsgJyIgcng9IjMiPjwvcmVjdD4nOwogICAgICAgICAgICB9CiAgICAgICAgICAgIHggKz0gdzsKICAgICAgICB9KTsKICAgICAgICBzdmcuaW5uZXJIVE1MID0gcmVjdHM7CiAgICAgICAgc2V0TGVnZW5kKCdwYy1jaGFydC1sZWdlbmQnLCBzZWdtZW50cy5tYXAoZnVuY3Rpb24gKHNlZykgewogICAgICAgICAgICByZXR1cm4geyBjb2xvcjogQ0hBUlRfQ09MT1JTW3NlZy5rZXldLCBsYWJlbDogc2VnLmxhYmVsICsgJyAoJyArIGZvcm1hdEN1cnJlbmN5KHNlZy52YWx1ZSkgKyAnKScgfTsKICAgICAgICB9KSk7CiAgICB9CiAgICBmdW5jdGlvbiByZW5kZXJCcmVha0V2ZW5DaGFydChmaXhlZCwgdmFyaWFibGUsIHByaWNlLCBicmVha0V2ZW5Vbml0cykgewogICAgICAgIGNvbnN0IHN2ZyA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdiZS1jaGFydC1zdmcnKTsKICAgICAgICBpZiAoIXN2ZykgcmV0dXJuOwogICAgICAgIGlmIChwcmljZSA8PSAwIHx8IHByaWNlIDw9IHZhcmlhYmxlIHx8IGZpeGVkIDw9IDApIHsKICAgICAgICAgICAgc3ZnLmlubmVySFRNTCA9ICc8dGV4dCB4PSIzMDAiIHk9IjEzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzY0NzQ4YiIgZm9udC1zaXplPSIxMyI+RmlsbCBpbiBGaXhlZCBDb3N0cywgVmFyaWFibGUgQ29zdCBhbmQgYSBTZWxsaW5nIFByaWNlIGFib3ZlIHRoZSBWYXJpYWJsZSBDb3N0PC90ZXh0Pic7CiAgICAgICAgICAgIHNldExlZ2VuZCgnYmUtY2hhcnQtc3ZnLWxlZ2VuZCcsIFtdKTsKICAgICAgICAgICAgcmV0dXJuOwogICAgICAgIH0KICAgICAgICBjb25zdCBwYWRMID0gNTUsIHBhZFIgPSAyMCwgcGFkVCA9IDIwLCBwYWRCID0gMzU7CiAgICAgICAgY29uc3QgY2hhcnRXID0gNjAwIC0gcGFkTCAtIHBhZFIsIGNoYXJ0SCA9IDI2MCAtIHBhZFQgLSBwYWRCOwogICAgICAgIGNvbnN0IG1heFVuaXRzID0gTWF0aC5tYXgoYnJlYWtFdmVuVW5pdHMgKiAyLCAxMCk7CiAgICAgICAgY29uc3QgbWF4WSA9IE1hdGgubWF4KGZpeGVkICsgdmFyaWFibGUgKiBtYXhVbml0cywgcHJpY2UgKiBtYXhVbml0cykgKiAxLjA1OwogICAgICAgIGNvbnN0IHhQeCA9IGZ1bmN0aW9uICh1KSB7IHJldHVybiBwYWRMICsgKHUgLyBtYXhVbml0cykgKiBjaGFydFc7IH07CiAgICAgICAgY29uc3QgeVB4ID0gZnVuY3Rpb24gKHYpIHsgcmV0dXJuIHBhZFQgKyBjaGFydEggLSAodiAvIG1heFkpICogY2hhcnRIOyB9OwogICAgICAgIGNvbnN0IGNvc3RMaW5lID0gWzAsIG1heFVuaXRzXS5tYXAoZnVuY3Rpb24gKHUpIHsgcmV0dXJuIHhQeCh1KSArICcsJyArIHlQeChmaXhlZCArIHZhcmlhYmxlICogdSk7IH0pLmpvaW4oJyAnKTsKICAgICAgICBjb25zdCByZXZMaW5lID0gWzAsIG1heFVuaXRzXS5tYXAoZnVuY3Rpb24gKHUpIHsgcmV0dXJuIHhQeCh1KSArICcsJyArIHlQeChwcmljZSAqIHUpOyB9KS5qb2luKCcgJyk7CiAgICAgICAgY29uc3QgYmVYID0geFB4KGJyZWFrRXZlblVuaXRzKSwgYmVZID0geVB4KHByaWNlICogYnJlYWtFdmVuVW5pdHMpOwogICAgICAgIGxldCBzdmdDb250ZW50ID0gJyc7CiAgICAgICAgc3ZnQ29udGVudCArPSAnPGxpbmUgeDE9IicgKyBwYWRMICsgJyIgeTE9IicgKyBwYWRUICsgJyIgeDI9IicgKyBwYWRMICsgJyIgeTI9IicgKyAocGFkVCArIGNoYXJ0SCkgKyAnIiBzdHJva2U9IiMzMzQxNTUiPjwvbGluZT4nOwogICAgICAgIHN2Z0NvbnRlbnQgKz0gJzxsaW5lIHgxPSInICsgcGFkTCArICciIHkxPSInICsgKHBhZFQgKyBjaGFydEgpICsgJyIgeDI9IicgKyAocGFkTCArIGNoYXJ0VykgKyAnIiB5Mj0iJyArIChwYWRUICsgY2hhcnRIKSArICciIHN0cm9rZT0iIzMzNDE1NSI+PC9saW5lPic7CiAgICAgICAgc3ZnQ29udGVudCArPSAnPHBvbHlsaW5lIHBvaW50cz0iJyArIGNvc3RMaW5lICsgJyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSInICsgQ0hBUlRfQ09MT1JTLmZlZSArICciIHN0cm9rZS13aWR0aD0iMi41Ij48L3BvbHlsaW5lPic7CiAgICAgICAgc3ZnQ29udGVudCArPSAnPHBvbHlsaW5lIHBvaW50cz0iJyArIHJldkxpbmUgKyAnIiBmaWxsPSJub25lIiBzdHJva2U9IicgKyBDSEFSVF9DT0xPUlMucHJvZml0ICsgJyIgc3Ryb2tlLXdpZHRoPSIyLjUiPjwvcG9seWxpbmU+JzsKICAgICAgICBzdmdDb250ZW50ICs9ICc8bGluZSB4MT0iJyArIGJlWC50b0ZpeGVkKDEpICsgJyIgeTE9IicgKyAocGFkVCArIGNoYXJ0SCkgKyAnIiB4Mj0iJyArIGJlWC50b0ZpeGVkKDEpICsgJyIgeTI9IicgKyBiZVkudG9GaXhlZCgxKSArICciIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLWRhc2hhcnJheT0iNCw0Ij48L2xpbmU+JzsKICAgICAgICBzdmdDb250ZW50ICs9ICc8Y2lyY2xlIGN4PSInICsgYmVYLnRvRml4ZWQoMSkgKyAnIiBjeT0iJyArIGJlWS50b0ZpeGVkKDEpICsgJyIgcj0iNSIgZmlsbD0iI2ZiYmYyNCI+PC9jaXJjbGU+JzsKICAgICAgICBzdmdDb250ZW50ICs9ICc8dGV4dCB4PSInICsgYmVYLnRvRml4ZWQoMSkgKyAnIiB5PSInICsgKHBhZFQgKyBjaGFydEggKyAyMCkgKyAnIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmJiZjI0IiBmb250LXNpemU9IjExIj4nICsgYnJlYWtFdmVuVW5pdHMudG9Mb2NhbGVTdHJpbmcoJ2VuLUlOJykgKyAnIHVuaXRzPC90ZXh0Pic7CiAgICAgICAgc3ZnQ29udGVudCArPSAnPHRleHQgeD0iJyArIHBhZEwgKyAnIiB5PSIxNCIgZmlsbD0iIzY0NzQ4YiIgZm9udC1zaXplPSIxMSI+4oK5JyArIE1hdGgucm91bmQobWF4WSkudG9Mb2NhbGVTdHJpbmcoJ2VuLUlOJykgKyAnPC90ZXh0Pic7CiAgICAgICAgc3ZnQ29udGVudCArPSAnPHRleHQgeD0iJyArIHBhZEwgKyAnIiB5PSInICsgKHBhZFQgKyBjaGFydEggKyA0KSArICciIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMTEiPuKCuTA8L3RleHQ+JzsKICAgICAgICBzdmcuaW5uZXJIVE1MID0gc3ZnQ29udGVudDsKICAgICAgICBzZXRMZWdlbmQoJ2JlLWNoYXJ0LWxlZ2VuZCcsIFsKICAgICAgICAgICAgeyBjb2xvcjogQ0hBUlRfQ09MT1JTLmZlZSwgbGFiZWw6ICdUb3RhbCBDb3N0IChGaXhlZCArIFZhcmlhYmxlKScgfSwKICAgICAgICAgICAgeyBjb2xvcjogQ0hBUlRfQ09MT1JTLnByb2ZpdCwgbGFiZWw6ICdUb3RhbCBSZXZlbnVlJyB9LAogICAgICAgICAgICB7IGNvbG9yOiAnI2ZiYmYyNCcsIGxhYmVsOiAnQnJlYWstRXZlbiBQb2ludCAoJyArIGJyZWFrRXZlblVuaXRzLnRvTG9jYWxlU3RyaW5nKCdlbi1JTicpICsgJyB1bml0cyknIH0KICAgICAgICBdKTsKICAgIH0KICAgIGZ1bmN0aW9uIHJlbmRlclByb2ZpdENoYXJ0KHJldmVudWUsIGNvZ3MsIG9wZXgsIG5ldCkgewogICAgICAgIGNvbnN0IHN2ZyA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwYS1jaGFydC1zdmcnKTsKICAgICAgICBpZiAoIXN2ZykgcmV0dXJuOwogICAgICAgIGlmIChyZXZlbnVlIDw9IDApIHsKICAgICAgICAgICAgc3ZnLmlubmVySFRNTCA9ICc8dGV4dCB4PSIzMDAiIHk9IjExMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzY0NzQ4YiIgZm9udC1zaXplPSIxMyI+RmlsbCBpbiB0aGUgY2FsY3VsYXRvciB0byBzZWUgeW91ciByZXZlbnVlIGJyZWFrZG93bjwvdGV4dD4nOwogICAgICAgICAgICBzZXRMZWdlbmQoJ3BhLWNoYXJ0LWxlZ2VuZCcsIFtdKTsKICAgICAgICAgICAgcmV0dXJuOwogICAgICAgIH0KICAgICAgICBjb25zdCBiYXJzID0gWwogICAgICAgICAgICB7IGxhYmVsOiAnUmV2ZW51ZScsIHZhbHVlOiByZXZlbnVlLCBjb2xvcjogQ0hBUlRfQ09MT1JTLnJldmVudWUgfSwKICAgICAgICAgICAgeyBsYWJlbDogJ0NPR1MnLCB2YWx1ZTogY29ncywgY29sb3I6IENIQVJUX0NPTE9SUy5jb2dzIH0sCiAgICAgICAgICAgIHsgbGFiZWw6ICdPcEV4JywgdmFsdWU6IG9wZXgsIGNvbG9yOiBDSEFSVF9DT0xPUlMub3BleCB9LAogICAgICAgICAgICB7IGxhYmVsOiAnTmV0IFByb2ZpdCcsIHZhbHVlOiBuZXQsIGNvbG9yOiBuZXQgPj0gMCA/IENIQVJUX0NPTE9SUy5uZXQgOiBDSEFSVF9DT0xPUlMubmV0TmVnIH0KICAgICAgICBdOwogICAgICAgIGNvbnN0IG1heFZhbCA9IE1hdGgubWF4LmFwcGx5KG51bGwsIGJhcnMubWFwKGZ1bmN0aW9uIChiKSB7IHJldHVybiBNYXRoLmFicyhiLnZhbHVlKTsgfSkpIHx8IDE7CiAgICAgICAgY29uc3QgcGFkQiA9IDMwLCBwYWRUID0gMjAsIGNoYXJ0SCA9IDIyMCAtIHBhZFQgLSBwYWRCOwogICAgICAgIGNvbnN0IGJhclcgPSAxMDAsIGdhcCA9IDQwOwogICAgICAgIGNvbnN0IHN0YXJ0WCA9ICg2MDAgLSAoYmFycy5sZW5ndGggKiBiYXJXICsgKGJhcnMubGVuZ3RoIC0gMSkgKiBnYXApKSAvIDI7CiAgICAgICAgbGV0IHN2Z0NvbnRlbnQgPSAnPGxpbmUgeDE9IjAiIHkxPSInICsgKHBhZFQgKyBjaGFydEgpICsgJyIgeDI9IjYwMCIgeTI9IicgKyAocGFkVCArIGNoYXJ0SCkgKyAnIiBzdHJva2U9IiMzMzQxNTUiPjwvbGluZT4nOwogICAgICAgIGJhcnMuZm9yRWFjaChmdW5jdGlvbiAoYiwgaSkgewogICAgICAgICAgICBjb25zdCBoID0gKE1hdGguYWJzKGIudmFsdWUpIC8gbWF4VmFsKSAqIGNoYXJ0SDsKICAgICAgICAgICAgY29uc3QgeCA9IHN0YXJ0WCArIGkgKiAoYmFyVyArIGdhcCk7CiAgICAgICAgICAgIGNvbnN0IHkgPSBiLnZhbHVlID49IDAgPyAocGFkVCArIGNoYXJ0SCAtIGgpIDogKHBhZFQgKyBjaGFydEgpOwogICAgICAgICAgICBzdmdDb250ZW50ICs9ICc8cmVjdCB4PSInICsgeC50b0ZpeGVkKDEpICsgJyIgeT0iJyArIHkudG9GaXhlZCgxKSArICciIHdpZHRoPSInICsgYmFyVyArICciIGhlaWdodD0iJyArIE1hdGgubWF4KGgsIDEpLnRvRml4ZWQoMSkgKyAnIiBmaWxsPSInICsgYi5jb2xvciArICciIHJ4PSI0Ij48L3JlY3Q+JzsKICAgICAgICAgICAgc3ZnQ29udGVudCArPSAnPHRleHQgeD0iJyArICh4ICsgYmFyVyAvIDIpLnRvRml4ZWQoMSkgKyAnIiB5PSInICsgKHkgLSA4KS50b0ZpeGVkKDEpICsgJyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iJyArIGIuY29sb3IgKyAnIiBmb250LXNpemU9IjEzIiBmb250LXdlaWdodD0iNzAwIj4nICsgZm9ybWF0Q3VycmVuY3koYi52YWx1ZSkgKyAnPC90ZXh0Pic7CiAgICAgICAgICAgIHN2Z0NvbnRlbnQgKz0gJzx0ZXh0IHg9IicgKyAoeCArIGJhclcgLyAyKS50b0ZpeGVkKDEpICsgJyIgeT0iJyArIChwYWRUICsgY2hhcnRIICsgMjApICsgJyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk0YTNiOCIgZm9udC1zaXplPSIxMiI+JyArIGIubGFiZWwgKyAnPC90ZXh0Pic7CiAgICAgICAgfSk7CiAgICAgICAgc3ZnLmlubmVySFRNTCA9IHN2Z0NvbnRlbnQ7CiAgICAgICAgc2V0TGVnZW5kKCdwYS1jaGFydC1sZWdlbmQnLCBbXSk7CiAgICB9CiAgICBmdW5jdGlvbiByZW5kZXJHb2FsQ2hhcnQodHJhZmZpYywgb3JkZXJzKSB7CiAgICAgICAgY29uc3Qgc3ZnID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3JnLWNoYXJ0LXN2ZycpOwogICAgICAgIGlmICghc3ZnKSByZXR1cm47CiAgICAgICAgaWYgKHRyYWZmaWMgPD0gMCB8fCBvcmRlcnMgPD0gMCkgewogICAgICAgICAgICBzdmcuaW5uZXJIVE1MID0gJzx0ZXh0IHg9IjMwMCIgeT0iNzAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2NDc0OGIiIGZvbnQtc2l6ZT0iMTMiPkZpbGwgaW4gdGhlIGNhbGN1bGF0b3IgdG8gc2VlIHlvdXIgdmlzaXRvcuKGkm9yZGVyIGZ1bm5lbDwvdGV4dD4nOwogICAgICAgICAgICBzZXRMZWdlbmQoJ3JnLWNoYXJ0LWxlZ2VuZCcsIFtdKTsKICAgICAgICAgICAgcmV0dXJuOwogICAgICAgIH0KICAgICAgICBjb25zdCBtYXhXID0gNTYwOwogICAgICAgIGNvbnN0IG9yZGVyc1cgPSBNYXRoLm1heCgob3JkZXJzIC8gdHJhZmZpYykgKiBtYXhXLCA2KTsKICAgICAgICBsZXQgc3ZnQ29udGVudCA9ICcnOwogICAgICAgIHN2Z0NvbnRlbnQgKz0gJzxyZWN0IHg9IjIwIiB5PSIyMCIgd2lkdGg9IicgKyBtYXhXICsgJyIgaGVpZ2h0PSI0MCIgZmlsbD0iJyArIENIQVJUX0NPTE9SUy52aXNpdG9ycyArICciIHJ4PSI2Ij48L3JlY3Q+JzsKICAgICAgICBzdmdDb250ZW50ICs9ICc8dGV4dCB4PSInICsgKDIwICsgbWF4VyAvIDIpICsgJyIgeT0iNDUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwZjE3MmEiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI3MDAiPicgKyB0cmFmZmljLnRvTG9jYWxlU3RyaW5nKCdlbi1JTicpICsgJyBWaXNpdG9ycyBOZWVkZWQgLyBNb250aDwvdGV4dD4nOwogICAgICAgIHN2Z0NvbnRlbnQgKz0gJzxyZWN0IHg9IjIwIiB5PSI4MCIgd2lkdGg9IicgKyBvcmRlcnNXLnRvRml4ZWQoMSkgKyAnIiBoZWlnaHQ9IjQwIiBmaWxsPSInICsgQ0hBUlRfQ09MT1JTLm9yZGVycyArICciIHJ4PSI2Ij48L3JlY3Q+JzsKICAgICAgICBzdmdDb250ZW50ICs9ICc8dGV4dCB4PSInICsgKDIwICsgb3JkZXJzVyArIDEwKS50b0ZpeGVkKDEpICsgJyIgeT0iMTA1IiB0ZXh0LWFuY2hvcj0ic3RhcnQiIGZpbGw9IiM0YWRlODAiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI3MDAiPicgKyBvcmRlcnMudG9Mb2NhbGVTdHJpbmcoJ2VuLUlOJykgKyAnIE9yZGVyczwvdGV4dD4nOwogICAgICAgIHN2Zy5pbm5lckhUTUwgPSBzdmdDb250ZW50OwogICAgICAgIGNvbnN0IGNvbnZQY3QgPSAoKG9yZGVycyAvIHRyYWZmaWMpICogMTAwKS50b0ZpeGVkKDEpOwogICAgICAgIHNldExlZ2VuZCgncmctY2hhcnQtbGVnZW5kJywgWwogICAgICAgICAgICB7IGNvbG9yOiBDSEFSVF9DT0xPUlMudmlzaXRvcnMsIGxhYmVsOiAnVmlzaXRvcnMgbmVlZGVkJyB9LAogICAgICAgICAgICB7IGNvbG9yOiBDSEFSVF9DT0xPUlMub3JkZXJzLCBsYWJlbDogJ09yZGVycyB0aGF0IGNvbnZlcnQgKCcgKyBjb252UGN0ICsgJyUgb2YgdmlzaXRvcnMpJyB9CiAgICAgICAgXSk7CiAgICB9";
+    try {
+        var _code = b64DecodeUnicode(_payload);
+        var _s = document.createElement('script');
+        _s.text = _code;
+        document.body.appendChild(_s);
+    } catch (e) {
+        console.error('Toolkit failed to load.');
+    }
+})();
+</script>
+</body>
+</html>

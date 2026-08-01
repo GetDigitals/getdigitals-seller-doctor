@@ -1,0 +1,18 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/create-order"
+  to = "/.netlify/functions/create-order"
+  status = 200
+
+# Toolkit is a plain static file served as-is from /public/toolkit —
+# no redirect needed, Vite copies it into dist/toolkit automatically.
+
+# SPA fallback so refreshing /listing or any in-app route doesn't 404
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
