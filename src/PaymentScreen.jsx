@@ -69,6 +69,11 @@ export default function PaymentScreen({ user, onPaymentDone }) {
   };
 
   const showTopup = lastPlan === 'trial_7day';
+  // Monthly renewal (₹300) is only for users who've already completed a
+  // full 30-day cycle once (via full_30day, or trial + topup which the
+  // webhook converts to full_30day). Brand-new users must not be able to
+  // get 30 days of access for ₹300 — they have to buy Full Access first.
+  const showMonthly = lastPlan === 'full_30day' || lastPlan === 'monthly';
 
   return (
     <div style={{ maxWidth: 420, margin: '60px auto', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
@@ -117,18 +122,20 @@ export default function PaymentScreen({ user, onPaymentDone }) {
         </div>
       )}
 
-      <div style={{ border: '1px solid #e5e4df', borderRadius: 12, padding: 20, textAlign: 'left' }}>
-        <p style={{ fontSize: 13, color: '#6b6b68', margin: '0 0 4px' }}>Monthly Renewal</p>
-        <p style={{ fontSize: 24, fontWeight: 600, margin: '0 0 4px' }}>₹300 <span style={{ fontSize: 14, fontWeight: 400, color: '#6b6b68' }}>/ month</span></p>
-        <p style={{ fontSize: 12, color: '#6b6b68', margin: '0 0 8px' }}>Pehle mahine (₹999 wale) ke baad, har mahine renew karne ke liye.</p>
-        <button
-          onClick={() => startPayment('monthly')}
-          disabled={loading}
-          style={{ width: '100%', marginTop: 4, background: 'transparent', color: '#0F6E56', border: '1px solid #0F6E56', padding: 12, borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
-        >
-          ₹300 monthly subscribe karo
-        </button>
-      </div>
+      {showMonthly && (
+        <div style={{ border: '1px solid #e5e4df', borderRadius: 12, padding: 20, textAlign: 'left' }}>
+          <p style={{ fontSize: 13, color: '#6b6b68', margin: '0 0 4px' }}>Monthly Renewal</p>
+          <p style={{ fontSize: 24, fontWeight: 600, margin: '0 0 4px' }}>₹300 <span style={{ fontSize: 14, fontWeight: 400, color: '#6b6b68' }}>/ month</span></p>
+          <p style={{ fontSize: 12, color: '#6b6b68', margin: '0 0 8px' }}>Pehle mahine (₹999 wale) ke baad, har mahine renew karne ke liye.</p>
+          <button
+            onClick={() => startPayment('monthly')}
+            disabled={loading}
+            style={{ width: '100%', marginTop: 4, background: 'transparent', color: '#0F6E56', border: '1px solid #0F6E56', padding: 12, borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+          >
+            ₹300 monthly subscribe karo
+          </button>
+        </div>
+      )}
 
       {error && <p style={{ color: '#A32D2D', fontSize: 13, marginTop: 16 }}>{error}</p>}
     </div>
