@@ -114,7 +114,7 @@ export default function AuthGuard({ children }) {
       {daysLeft !== null && daysLeft <= 3 && (
         <div style={{ background: '#FFF4E5', borderBottom: '1px solid #F0C36D', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap', fontFamily: 'system-ui, sans-serif' }}>
           <span style={{ fontSize: 13, color: '#8A5A00' }}>
-            ⚠️ Aapka subscription {daysLeft <= 0 ? 'aaj' : `${daysLeft} din mein`} expire ho raha hai — renew karna na bhoolo.
+            ⚠️ Aapka subscription {daysLeft <= 0 ? 'aaj' : `${daysLeft} din mein`} expire ho raha hai — abhi renew karo aur 10% bonus discount pao!
           </span>
           <button
             onClick={() => setHasAccess(false)}

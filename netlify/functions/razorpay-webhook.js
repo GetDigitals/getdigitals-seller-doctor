@@ -66,18 +66,22 @@ exports.handler = async (event) => {
   }
 
   // full_30day, trial_7day, and monthly all create a fresh subscription
-  // row that starts now.
-  const DURATIONS_DAYS = { full_30day: 30, trial_7day: 7, monthly: 30 };
+  // row that starts now. monthly_discounted is the same as monthly (30
+  // days) but gets normalized to plan_type "monthly" in the database, so
+  // the rest of the app (e.g. "has this user done a full month before?")
+  // doesn't need to know about the discounted variant.
+  const DURATIONS_DAYS = { full_30day: 30, trial_7day: 7, monthly: 30, monthly_discounted: 30 };
   const days = DURATIONS_DAYS[plan];
   if (!days) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Unknown plan type' }) };
   }
   const expiresAt = new Date(now);
   expiresAt.setDate(now.getDate() + days);
+  const normalizedPlanType = plan === 'monthly_discounted' ? 'monthly' : plan;
 
   const { error } = await supabase.from('subscriptions').insert({
     user_id: userId,
-    plan_type: plan,
+    plan_type: normalizedPlanType,
     status: 'active',
     razorpay_payment_id: payload.payload.payment.entity.id,
     started_at: now.toISOString(),

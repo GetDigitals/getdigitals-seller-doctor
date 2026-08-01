@@ -16,6 +16,7 @@ export default function PaymentScreen({ user, onPaymentDone }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [lastPlan, setLastPlan] = useState(null); // 'trial_7day' | 'full_30day' | 'monthly' | null
+  const [daysLeft, setDaysLeft] = useState(null); // days until latest plan expires (can be negative if already expired)
 
   useEffect(() => {
     supabase
@@ -25,7 +26,13 @@ export default function PaymentScreen({ user, onPaymentDone }) {
       .order('expires_at', { ascending: false })
       .limit(1)
       .maybeSingle()
-      .then(({ data }) => setLastPlan(data?.plan_type ?? null));
+      .then(({ data }) => {
+        setLastPlan(data?.plan_type ?? null);
+        if (data?.expires_at) {
+          const msLeft = new Date(data.expires_at).getTime() - Date.now();
+          setDaysLeft(Math.ceil(msLeft / (1000 * 60 * 60 * 24)));
+        }
+      });
   }, [user.id]);
 
   const startPayment = async (plan) => {
@@ -48,6 +55,7 @@ export default function PaymentScreen({ user, onPaymentDone }) {
           plan === 'full_30day' ? '30-Day Full Access' :
           plan === 'trial_7day' ? '7-Day Trial' :
           plan === 'topup_23day' ? 'Trial Top-up (23 more days)' :
+          plan === 'monthly_discounted' ? 'Monthly Subscription (Early Renewal Bonus)' :
           'Monthly Subscription',
         order_id: order.id,
         handler: function () {
@@ -74,6 +82,11 @@ export default function PaymentScreen({ user, onPaymentDone }) {
   // webhook converts to full_30day). Brand-new users must not be able to
   // get 30 days of access for ₹300 — they have to buy Full Access first.
   const showMonthly = lastPlan === 'full_30day' || lastPlan === 'monthly';
+  // The "renew early" bonus (10% off) applies during the 3-day warning
+  // window shown in the app before expiry (daysLeft 0–3), and for a small
+  // grace period just after expiry too, so someone who sees the warning
+  // but pays a day or two late still gets it.
+  const isEarlyRenewal = daysLeft !== null && daysLeft <= 3 && daysLeft >= -2;
 
   return (
     <div style={{ maxWidth: 420, margin: '60px auto', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
@@ -123,17 +136,36 @@ export default function PaymentScreen({ user, onPaymentDone }) {
       )}
 
       {showMonthly && (
-        <div style={{ border: '1px solid #e5e4df', borderRadius: 12, padding: 20, textAlign: 'left' }}>
+        <div style={{ border: isEarlyRenewal ? '1px solid #0F6E56' : '1px solid #e5e4df', background: isEarlyRenewal ? '#EAF6F2' : '#fff', borderRadius: 12, padding: 20, textAlign: 'left' }}>
           <p style={{ fontSize: 13, color: '#6b6b68', margin: '0 0 4px' }}>Monthly Renewal</p>
-          <p style={{ fontSize: 24, fontWeight: 600, margin: '0 0 4px' }}>₹300 <span style={{ fontSize: 14, fontWeight: 400, color: '#6b6b68' }}>/ month</span></p>
-          <p style={{ fontSize: 12, color: '#6b6b68', margin: '0 0 8px' }}>Pehle mahine (₹999 wale) ke baad, har mahine renew karne ke liye.</p>
-          <button
-            onClick={() => startPayment('monthly')}
-            disabled={loading}
-            style={{ width: '100%', marginTop: 4, background: 'transparent', color: '#0F6E56', border: '1px solid #0F6E56', padding: 12, borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
-          >
-            ₹300 monthly subscribe karo
-          </button>
+          {isEarlyRenewal ? (
+            <>
+              <p style={{ fontSize: 24, fontWeight: 600, margin: '0 0 4px' }}>
+                <span style={{ textDecoration: 'line-through', color: '#9a9a95', fontSize: 16, fontWeight: 400, marginRight: 8 }}>₹300</span>
+                ₹270 <span style={{ fontSize: 14, fontWeight: 400, color: '#6b6b68' }}>/ month</span>
+              </p>
+              <p style={{ fontSize: 12, color: '#0F6E56', fontWeight: 500, margin: '0 0 8px' }}>🎁 Early Renewal Bonus — 10% off, kyunki tumne time se pehle renew kiya!</p>
+              <button
+                onClick={() => startPayment('monthly_discounted')}
+                disabled={loading}
+                style={{ width: '100%', marginTop: 4, background: '#0F6E56', color: '#fff', border: 'none', padding: 12, borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+              >
+                ₹270 mein abhi renew karo
+              </button>
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize: 24, fontWeight: 600, margin: '0 0 4px' }}>₹300 <span style={{ fontSize: 14, fontWeight: 400, color: '#6b6b68' }}>/ month</span></p>
+              <p style={{ fontSize: 12, color: '#6b6b68', margin: '0 0 8px' }}>Pehle mahine (₹999 wale) ke baad, har mahine renew karne ke liye.</p>
+              <button
+                onClick={() => startPayment('monthly')}
+                disabled={loading}
+                style={{ width: '100%', marginTop: 4, background: 'transparent', color: '#0F6E56', border: '1px solid #0F6E56', padding: 12, borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+              >
+                ₹300 monthly subscribe karo
+              </button>
+            </>
+          )}
         </div>
       )}
 
