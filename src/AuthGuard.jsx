@@ -50,11 +50,27 @@ export default function AuthGuard({ children }) {
       setHasAccess(true);
       return;
     }
-    // Ask the database (via the helper function from the SQL schema)
-    // whether this specific user currently has an active, unexpired plan.
-    supabase.rpc('has_active_subscription', { check_user_id: user.id }).then(({ data }) => {
-      setHasAccess(!!data);
-    });
+
+    const checkAccess = () => {
+      // Ask the database (via the helper function from the SQL schema)
+      // whether this specific user currently has an active, unexpired plan.
+      supabase.rpc('has_active_subscription', { check_user_id: user.id }).then(({ data }) => {
+        const active = !!data;
+        setHasAccess(active);
+        // If someone was mid-session (tab left open, never refreshed) and
+        // their plan just expired, kick them out immediately — don't wait
+        // for them to reload the page.
+        if (!active && hasAccess === true) {
+          supabase.auth.signOut();
+        }
+      });
+    };
+
+    checkAccess();
+    // Re-check every 2 minutes so an expiry is caught within a couple of
+    // minutes even if the tab is left open indefinitely.
+    const interval = setInterval(checkAccess, 2 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [user]);
 
   if (checking) {
