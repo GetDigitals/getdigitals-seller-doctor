@@ -16,8 +16,10 @@ exports.handler = async (event) => {
   try {
     const { max_tokens, messages } = JSON.parse(event.body);
 
-    // Gemini's free-tier model. Change here if you want a different one.
-    const GEMINI_MODEL = 'gemini-2.5-flash';
+    // Gemini's current stable Flash model (as of Aug 2026). gemini-2.5-flash
+    // was retired for new API keys — update this string if Google ships a
+    // newer stable model later and this one gets deprecated too.
+    const GEMINI_MODEL = 'gemini-3.6-flash';
 
     // Convert Anthropic-style messages ([{role, content}]) into Gemini's
     // "contents" format ([{role, parts: [{text}]}]). Gemini uses "model"
