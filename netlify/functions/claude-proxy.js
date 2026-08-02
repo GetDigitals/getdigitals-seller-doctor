@@ -37,7 +37,16 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         contents,
         generationConfig: {
-          maxOutputTokens: max_tokens || 1200,
+          // Large listing templates (35+ compulsory fields, multiple color
+          // variants) need real room — 1200 was too tight and caused
+          // truncated/incomplete responses. Always give at least 4096.
+          maxOutputTokens: Math.max(max_tokens || 0, 4096),
+          // gemini-3.6-flash "thinks" by default (medium level), which adds
+          // latency (causing 504 timeouts) and eats into the output token
+          // budget, leaving too little room for the actual answer. This is
+          // a straightforward template-filling task, not a reasoning task,
+          // so we turn thinking off entirely.
+          thinkingConfig: { thinkingLevel: 'minimal' },
         },
       }),
     });
