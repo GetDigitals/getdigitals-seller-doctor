@@ -91,7 +91,35 @@ export default function PaymentScreen({ user, onPaymentDone }) {
   return (
     <div style={{ maxWidth: 420, margin: '60px auto', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
       <h2 style={{ fontSize: 20, marginBottom: 8 }}>Apna plan choose karo</h2>
-      <p style={{ color: '#6b6b68', fontSize: 14, marginBottom: 28 }}>Profit Dashboard aur Listing Generator use karne ke liye ek plan activate karo.</p>
+      <p style={{ color: '#6b6b68', fontSize: 14, marginBottom: 20 }}>CSV-based Profit Dashboard aur AI Listing Generator use karne ke liye ek plan activate karo.</p>
+
+      {/*
+        Free demo: the 4-in-1 Business Profit Toolkit (break-even, Flipkart/Meesho/Amazon
+        margin calculators) lives at /toolkit/ as a static page — it needs no login and no
+        payment at all, so any logged-in user lands here first should see it front and
+        centre instead of hitting a bare paywall. Opens in a new tab so this payment
+        screen (and the plans below) stays put behind it.
+      */}
+      <a
+        href="/toolkit/"
+        target="_blank"
+        rel="noreferrer"
+        style={{
+          display: 'block',
+          textDecoration: 'none',
+          border: '1px solid #0F6E56',
+          background: '#EAF6F2',
+          borderRadius: 12,
+          padding: '16px 18px',
+          marginBottom: 28,
+          textAlign: 'left',
+        }}
+      >
+        <p style={{ fontSize: 13, color: '#0F6E56', margin: '0 0 4px', fontWeight: 600 }}>🧮 Free Price &amp; Profit Calculator</p>
+        <p style={{ fontSize: 12, color: '#3f3f3d', margin: 0 }}>
+          Break-even, Flipkart, Meesho aur Amazon margin calculators — bina login/payment ke, hamesha free. Abhi try karo →
+        </p>
+      </a>
 
       {showTopup && (
         <div style={{ border: '1px solid #0F6E56', background: '#EAF6F2', borderRadius: 12, padding: 20, marginBottom: 16, textAlign: 'left' }}>
