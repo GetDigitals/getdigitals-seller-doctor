@@ -25,6 +25,7 @@ export default function AuthGuard({ children }) {
   const [hasAccess, setHasAccess] = useState(null); // null = still checking
   const [checking, setChecking] = useState(true);
   const [daysLeft, setDaysLeft] = useState(null); // days until current plan expires (null = unknown/not applicable)
+  const [showPayment, setShowPayment] = useState(false); // payment shown as an on-demand overlay now, not a hard block
 
   useEffect(() => {
     // On first load, check if there's already a logged-in session
@@ -105,19 +106,25 @@ export default function AuthGuard({ children }) {
     return <div style={{ textAlign: 'center', marginTop: 80, fontFamily: 'system-ui, sans-serif', color: '#6b6b68' }}>Checking your subscription...</div>;
   }
 
-  if (!hasAccess) {
-    return <PaymentScreen user={user} onPaymentDone={() => setHasAccess(true)} />;
-  }
-
+  // Unpaid users used to get a hard paywall here instead of the app —
+  // now they always see the real tool (children, e.g. SellerDoctorTool),
+  // with hasAccess/onRequestPayment passed down so IT decides per-feature
+  // what's locked. Payment only appears as an on-demand overlay when a
+  // locked feature is tapped, or via the renew banner below.
   return (
     <div>
-      {daysLeft !== null && daysLeft <= 3 && (
+      {!hasAccess && (
+        <div style={{ background: '#FFF4E5', borderBottom: '1px solid #F0C36D', padding: '10px 16px', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
+          <span style={{ fontSize: 13, color: '#8A5A00' }}>🔒 Free calculator abhi try karo — baaki features ke liye ek plan activate karo.</span>
+        </div>
+      )}
+      {hasAccess && daysLeft !== null && daysLeft <= 3 && (
         <div style={{ background: '#FFF4E5', borderBottom: '1px solid #F0C36D', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap', fontFamily: 'system-ui, sans-serif' }}>
           <span style={{ fontSize: 13, color: '#8A5A00' }}>
             ⚠️ Aapka subscription {daysLeft <= 0 ? 'aaj' : `${daysLeft} din mein`} expire ho raha hai — abhi renew karo aur 10% bonus discount pao!
           </span>
           <button
-            onClick={() => setHasAccess(false)}
+            onClick={() => setShowPayment(true)}
             style={{ fontSize: 12, background: '#0F6E56', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', fontWeight: 500 }}
           >
             Abhi Renew Karo
@@ -133,7 +140,28 @@ export default function AuthGuard({ children }) {
           Logout
         </button>
       </div>
-      {children}
+      {React.cloneElement(children, { hasAccess, onRequestPayment: () => setShowPayment(true) })}
+
+      {showPayment && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, overflowY: 'auto' }}>
+          <div style={{ background: '#fff', maxWidth: 480, margin: '24px auto', borderRadius: 12, position: 'relative', minHeight: 'calc(100% - 48px)' }}>
+            <button
+              onClick={() => setShowPayment(false)}
+              style={{ position: 'absolute', top: 12, right: 12, fontSize: 20, background: 'none', border: 'none', cursor: 'pointer', color: '#6b6b68', lineHeight: 1, zIndex: 1 }}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            <PaymentScreen
+              user={user}
+              onPaymentDone={() => {
+                setHasAccess(true);
+                setShowPayment(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
