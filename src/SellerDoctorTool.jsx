@@ -298,7 +298,7 @@ Only include SKUs/points that genuinely need attention. If everything is healthy
   return parsed;
 }
 
-function ProfitDashboardApp({ onOpenListingTool }) {
+function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) {
   const [rows, setRows] = useState(null);
   const [meesho, setMeesho] = useState(null); // { totals, statusCounts, totalOrders }
   const [flipkart, setFlipkart] = useState(null); // { totalOrders, statusCounts, slaBreaches, riskySkus }
@@ -370,6 +370,13 @@ function ProfitDashboardApp({ onOpenListingTool }) {
   }, [rows]);
 
   if (!rows && !flipkart) {
+    // Locked features stay fully visible (never hidden) — tapping one just
+    // opens the payment screen instead of performing the upload/action.
+    // This lets a free/unpaid visitor see everything Seller Doctor offers
+    // (matching GetDigitals Topper's "see it, then unlock it" pattern)
+    // instead of hitting a blank paywall before they even know what's here.
+    const lockIcon = !hasAccess ? ' 🔒' : '';
+
     return (
       <div style={{ maxWidth: 480, margin: "48px auto", textAlign: "center", fontFamily: "system-ui, sans-serif" }}>
         <div style={{ width: 56, height: 56, borderRadius: 14, background: "#0F6E56", margin: "0 auto 16px", display: "flex", alignItems: "center", justifyContent: "center", color: "#E1F5EE", fontSize: 24, fontWeight: 600 }}>AI</div>
@@ -377,31 +384,37 @@ function ProfitDashboardApp({ onOpenListingTool }) {
         <h1 style={{ fontSize: 22, fontWeight: 600, color: "#1a1a1a", margin: "0 0 8px" }}>GetDigitals Seller Doctor — Demo</h1>
         <p style={{ fontSize: 14, color: "#6b6b68", margin: "0 0 24px", lineHeight: 1.6 }}>Real Meesho settlement file (.xlsx) upload karo, ya generic CSV try karo.</p>
 
+        {!hasAccess && (
+          <div style={{ background: "#FFF4E5", border: "1px solid #F0C36D", borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 12.5, color: "#8A5A00", textAlign: "left" }}>
+            🔒 Neeche diye features ek plan activate karne ke baad unlock hote hain. Free calculator sabse neeche hai, woh abhi bhi try kar sakte ho.
+          </div>
+        )}
+
         <input type="file" accept=".xlsx,.zip" ref={xlsxRef} style={{ display: "none" }} onChange={(e) => e.target.files[0] && handleMeeshoXlsx(e.target.files[0])} />
-        <button onClick={() => xlsxRef.current.click()} style={{ background: "#0F6E56", color: "#fff", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", marginBottom: 12, width: "100%" }}>
-          Meesho settlement (.xlsx) upload karo
+        <button onClick={() => (hasAccess ? xlsxRef.current.click() : onRequestPayment())} style={{ background: "#0F6E56", color: "#fff", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", marginBottom: 12, width: "100%", opacity: hasAccess ? 1 : 0.75 }}>
+          Meesho settlement (.xlsx) upload karo{lockIcon}
         </button>
 
         <input type="file" accept=".xlsx,.zip" ref={flipkartRef} style={{ display: "none" }} onChange={(e) => e.target.files[0] && handleFlipkartOrders(e.target.files[0])} />
-        <button onClick={() => flipkartRef.current.click()} style={{ background: "#fff", color: "#0F6E56", border: "1px solid #0F6E56", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", marginBottom: 12, width: "100%" }}>
-          Flipkart Orders report (.xlsx) upload karo
+        <button onClick={() => (hasAccess ? flipkartRef.current.click() : onRequestPayment())} style={{ background: "#fff", color: "#0F6E56", border: "1px solid #0F6E56", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", marginBottom: 12, width: "100%", opacity: hasAccess ? 1 : 0.75 }}>
+          Flipkart Orders report (.xlsx) upload karo{lockIcon}
         </button>
 
         <input type="file" accept=".csv" ref={csvRef} style={{ display: "none" }} onChange={(e) => e.target.files[0] && handleCsv(e.target.files[0])} />
-        <button onClick={() => csvRef.current.click()} style={{ background: "transparent", color: "#0F6E56", border: "1px solid #0F6E56", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", marginBottom: 12, width: "100%" }}>
-          Generic CSV upload karo
+        <button onClick={() => (hasAccess ? csvRef.current.click() : onRequestPayment())} style={{ background: "transparent", color: "#0F6E56", border: "1px solid #0F6E56", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", marginBottom: 12, width: "100%", opacity: hasAccess ? 1 : 0.75 }}>
+          Generic CSV upload karo{lockIcon}
         </button>
 
-        <button onClick={() => loadRows(DEMO_ORDERS)} style={{ background: "transparent", color: "#6b6b68", border: "1px solid #e5e4df", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 20 }}>
-          Demo data se try karo
+        <button onClick={() => (hasAccess ? loadRows(DEMO_ORDERS) : onRequestPayment())} style={{ background: "transparent", color: "#6b6b68", border: "1px solid #e5e4df", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 20, opacity: hasAccess ? 1 : 0.75 }}>
+          Demo data se try karo{lockIcon}
         </button>
 
-        <button onClick={onOpenListingTool} style={{ background: "#f4f3ef", color: "#1a1a1a", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 10 }}>
-          📋 Listing Draft Generator (beta) →
+        <button onClick={() => (hasAccess ? onOpenListingTool() : onRequestPayment())} style={{ background: "#f4f3ef", color: "#1a1a1a", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 10, opacity: hasAccess ? 1 : 0.75 }}>
+          📋 Listing Draft Generator (beta) →{lockIcon}
         </button>
 
-        <a href="/toolkit/" style={{ display: "block", textAlign: "center", background: "transparent", color: "#0F6E56", border: "1px solid #e5e4df", padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: "none", width: "100%", boxSizing: "border-box" }}>
-          🧮 Free Business Profit Toolkit (calculators) →
+        <a href="/toolkit/" target="_blank" rel="noreferrer" style={{ display: "block", textAlign: "center", background: "#EAF6F2", color: "#0F6E56", border: "1px solid #0F6E56", padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", width: "100%", boxSizing: "border-box" }}>
+          🧮 Free Business Profit Toolkit (calculators) → Hamesha free
         </a>
 
         {error && <p style={{ color: "#A32D2D", fontSize: 13, marginTop: 16 }}>{error}</p>}
@@ -1243,8 +1256,11 @@ function ListingDraftTool({ onBack }) {
   );
 }
 
-export default function SellerDoctorTool() {
+export default function SellerDoctorTool({ hasAccess = true, onRequestPayment = () => {} }) {
   const [mode, setMode] = useState("main"); // main | listing
+  // mode only ever becomes "listing" via onOpenListingTool, which itself
+  // checks hasAccess first — so an unpaid user never actually reaches
+  // ListingDraftTool. No extra guard needed here.
   if (mode === "listing") return <ListingDraftTool onBack={() => setMode("main")} />;
-  return <ProfitDashboardApp onOpenListingTool={() => setMode("listing")} />;
+  return <ProfitDashboardApp onOpenListingTool={() => setMode("listing")} hasAccess={hasAccess} onRequestPayment={onRequestPayment} />;
 }
