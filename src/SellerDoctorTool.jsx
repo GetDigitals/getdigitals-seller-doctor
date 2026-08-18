@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import { supabase } from "./supabaseClient";
 
 const DEMO_ORDERS = [
   { sku: "SKU-31", name: "Cotton Kurti - Blue", platform: "Meesho", sales: 42000, units: 210, returns: 95, commission: 0, shipping: 8400, tds: 420, hiddenDeduction: 3100, adSpend: 0 },
@@ -298,6 +299,85 @@ Only include SKUs/points that genuinely need attention. If everything is healthy
   return parsed;
 }
 
+// PHASE 1 — Daily Briefing: har successful analysis ke baad ek snapshot
+// save karta hai, isi se "pichle hafte vs is hafte" comparison possible hota hai.
+async function saveSnapshot(rows, recommendations) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return; // logged out ho to silently skip
+
+    const totalSales = rows.reduce((sum, r) => sum + (r.sales || 0), 0);
+    let totalProfit = 0, totalLoss = 0;
+    rows.forEach((row) => {
+      const m = computeMetrics(row);
+      if (m.profit >= 0) totalProfit += m.profit;
+      else totalLoss += Math.abs(m.profit);
+    });
+
+    const criticalCount = recommendations.filter((r) => r.level === "critical").length;
+    const warningCount = recommendations.filter((r) => r.level === "warning").length;
+    const topIssues = recommendations.slice(0, 3).map((r) => ({ title: r.title, level: r.level }));
+
+    await supabase.from("snapshots").insert({
+      user_id: user.id,
+      total_sales: Math.round(totalSales),
+      total_profit: Math.round(totalProfit),
+      total_loss: Math.round(totalLoss),
+      critical_count: criticalCount,
+      warning_count: warningCount,
+      sku_count: rows.length,
+      top_issues: topIssues,
+    });
+  } catch (err) {
+    // Snapshot fail hone se poora analysis fail nahi hona chahiye.
+    console.error("Snapshot save failed:", err);
+  }
+}
+
+// PHASE 1 — Daily Briefing: pichle 2 snapshots fetch karke AI se ek
+// chhota, plain-language "aaj ki briefing" banata hai.
+async function getBriefing() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not logged in");
+
+  const { data: snapshots, error } = await supabase
+    .from("snapshots")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(2);
+
+  if (error) throw error;
+  if (!snapshots || snapshots.length === 0) {
+    return { bullets: ["Abhi tak koi analysis save nahi hua. Pehle apni file upload karo."], hasTrend: false };
+  }
+
+  const latest = snapshots[0];
+  const previous = snapshots[1] || null;
+
+  const prompt = `Tum ek e-commerce business advisor ho. Neeche seller ke latest business snapshot ka data hai${previous ? ", aur pichle snapshot se comparison ke liye purana data bhi hai" : " (ye unka pehla snapshot hai, koi comparison nahi)"}.
+
+Latest: ${JSON.stringify({ totalSales: latest.total_sales, totalProfit: latest.total_profit, totalLoss: latest.total_loss, criticalIssues: latest.critical_count, warningIssues: latest.warning_count, topIssues: latest.top_issues })}
+${previous ? `Previous (${new Date(previous.created_at).toLocaleDateString("en-IN")}): ${JSON.stringify({ totalSales: previous.total_sales, totalProfit: previous.total_profit, criticalIssues: previous.critical_count })}` : ""}
+
+3-4 short bullet points mein ek "daily briefing" likho, Hindi/English mix mein, jaise ek dost seedhi baat kar raha ho. Sabse important/urgent point sabse pehle. Agar previous data hai to trend (badha/gira) zaroor mention karo. Numbers ka use karo, generic baatein mat likho.
+
+Respond ONLY with a JSON object, no markdown, no code fences: {"bullets": ["point 1", "point 2", ...]}`;
+
+  const response = await fetch("/.netlify/functions/claude-proxy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 500, messages: [{ role: "user", content: prompt }] }),
+  });
+  if (!response.ok) throw new Error("Briefing request failed");
+  const data = await response.json();
+  const textBlock = data.content.find((b) => b.type === "text");
+  const clean = textBlock.text.replace(/```json|```/g, "").trim();
+  const parsed = JSON.parse(clean);
+
+  return { bullets: parsed.bullets, hasTrend: !!previous };
+}
+
 function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) {
   const [rows, setRows] = useState(null);
   const [meesho, setMeesho] = useState(null); // { totals, statusCounts, totalOrders }
@@ -306,6 +386,8 @@ function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) 
   const [error, setError] = useState("");
   const [recommendations, setRecommendations] = useState([]);
   const [aiStatus, setAiStatus] = useState("idle");
+  const [briefing, setBriefing] = useState(null);
+  const [briefingStatus, setBriefingStatus] = useState("idle"); // idle | loading | done | failed
   const csvRef = useRef(null);
   const xlsxRef = useRef(null);
   const flipkartRef = useRef(null);
@@ -321,9 +403,21 @@ function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) 
       const recs = await getAiRecommendations(newRows, meta);
       setRecommendations(recs);
       setAiStatus("done");
+      saveSnapshot(newRows, recs); // fire-and-forget — analysis UI iske liye rukna nahi chahiye
     } catch (err) {
       setRecommendations(buildRuleBasedRecommendations(newRows));
       setAiStatus("failed");
+    }
+  };
+
+  const handleGetBriefing = async () => {
+    setBriefingStatus("loading");
+    try {
+      const result = await getBriefing();
+      setBriefing(result);
+      setBriefingStatus("done");
+    } catch (err) {
+      setBriefingStatus("failed");
     }
   };
 
@@ -491,6 +585,37 @@ function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) 
             <p style={{ fontSize: 13, color: "#6b6b68", margin: 0 }}>Koi SKU repeat cancel/return pattern nahi dikh raha.</p>
           )}
         </div>
+      )}
+
+      {rows && (
+      <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: "16px 18px", marginBottom: 20, background: "#FAFAF8" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: briefing ? 12 : 0 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>🩺 Aaj ki Briefing</h2>
+          <button
+            onClick={handleGetBriefing}
+            disabled={briefingStatus === "loading"}
+            style={{ fontSize: 12, background: "#3C3489", color: "#fff", border: "none", borderRadius: 20, padding: "6px 14px", cursor: "pointer" }}
+          >
+            {briefingStatus === "loading" ? "Soch raha hai..." : "Refresh Briefing"}
+          </button>
+        </div>
+
+        {briefingStatus === "failed" && (
+          <p style={{ fontSize: 13, color: "#BA7517", margin: 0 }}>Briefing load nahi ho payi. Dobara try karo.</p>
+        )}
+
+        {briefing && briefing.bullets && (
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {briefing.bullets.map((b, i) => (
+              <li key={i} style={{ fontSize: 13.5, color: "#3a3a37", marginBottom: 6, lineHeight: 1.6 }}>{b}</li>
+            ))}
+          </ul>
+        )}
+
+        {!briefing && briefingStatus === "idle" && (
+          <p style={{ fontSize: 13, color: "#9a9a95", margin: 0 }}>Refresh dabao apni latest briefing dekhne ke liye.</p>
+        )}
+      </div>
       )}
 
       {rows && (
