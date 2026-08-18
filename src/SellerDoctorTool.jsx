@@ -587,7 +587,7 @@ function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) 
         </div>
       )}
 
-      {rows && (
+      {rows && hasAccess && (
       <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: "16px 18px", marginBottom: 20, background: "#FAFAF8" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: briefing ? 12 : 0 }}>
           <h2 style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>🩺 Aaj ki Briefing</h2>
