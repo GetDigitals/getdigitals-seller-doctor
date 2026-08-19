@@ -200,6 +200,88 @@ async function handleRazorpayWebhook(request, env) {
   return new Response('OK', { status: 200 });
 }
 
+// UPDATE #2 — Weekly Email Briefing. Har active-subscription user ke liye:
+// last 2 snapshots nikalo, Gemini se 3-4 line ki briefing banwao, email bhejo.
+// Resend API use karta hai — RESEND_API_KEY secret Cloudflare dashboard mein
+// set karna hoga (Worker → Settings → Variables and Secrets). Kabhi bhi
+// wrangler.jsonc ya kisi committed file mein plaintext key mat likhna.
+async function sendBriefingEmail(env, toEmail, bullets) {
+  const bulletsHtml = bullets.map((b) => `<li style="margin-bottom:8px; line-height:1.6;">${b}</li>`).join('');
+  const html = `
+    <div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+      <h2 style="color:#3C3489; font-size:18px;">🩺 Aapki Weekly Business Briefing</h2>
+      <ul style="padding-left:18px; font-size:14px; color:#3a3a37;">${bulletsHtml}</ul>
+      <a href="https://seller-doctors.getdigitals.in" style="display:inline-block; margin-top:12px; background:#3C3489; color:#fff; padding:10px 20px; border-radius:20px; text-decoration:none; font-size:13px;">Poora Dashboard Dekho →</a>
+      <p style="font-size:11px; color:#9a9a95; margin-top:24px;">Seller Doctor · GetDigitals.in</p>
+    </div>`;
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'Seller Doctor <briefing@getdigitals.in>',
+      to: toEmail,
+      subject: '🩺 Aapki Weekly Business Briefing',
+      html,
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Resend send failed for ${toEmail}: ${errText}`);
+  }
+}
+
+async function generateBriefingTextFromSnapshots(env, latest, previous) {
+  const prompt = `Tum ek e-commerce business advisor ho. Neeche seller ke latest business snapshot ka data hai${previous ? ", aur pichle snapshot se comparison ke liye purana data bhi hai" : " (ye unka pehla snapshot hai, koi comparison nahi)"}.
+
+Latest: ${JSON.stringify({ totalSales: latest.total_sales, totalProfit: latest.total_profit, totalLoss: latest.total_loss, criticalIssues: latest.critical_count, warningIssues: latest.warning_count, topIssues: latest.top_issues })}
+${previous ? `Previous (${new Date(previous.created_at).toLocaleDateString("en-IN")}): ${JSON.stringify({ totalSales: previous.total_sales, totalProfit: previous.total_profit, criticalIssues: previous.critical_count })}` : ""}
+
+3-4 short bullet points mein ek "weekly briefing" likho, Hindi/English mix mein, jaise ek dost seedhi baat kar raha ho. Sabse important/urgent point sabse pehle. Agar previous data hai to trend (badha/gira) zaroor mention karo. Numbers ka use karo, generic baatein mat likho.
+
+Respond ONLY with a JSON object, no markdown, no code fences: {"bullets": ["point 1", "point 2", ...]}`;
+
+  const text = await callGemini(env, [{ role: 'user', content: prompt }], 500);
+  const clean = text.replace(/```json|```/g, '').trim();
+  const parsed = JSON.parse(clean);
+  return parsed.bullets;
+}
+
+async function handleWeeklyBriefings(env) {
+  const subsRes = await supabaseRest(env, 'subscriptions?status=eq.active&select=user_id');
+  if (!subsRes.ok) { console.error('Failed to fetch active subscriptions'); return; }
+  const subs = await subsRes.json();
+  const userIds = [...new Set(subs.map((s) => s.user_id))];
+
+  for (const userId of userIds) {
+    try {
+      const snapRes = await supabaseRest(env, `snapshots?user_id=eq.${userId}&order=created_at.desc&limit=2`);
+      const snapshots = await snapRes.json();
+      if (!snapshots || snapshots.length === 0) continue; // koi data upload hi nahi hua abhi tak — skip
+
+      const bullets = await generateBriefingTextFromSnapshots(env, snapshots[0], snapshots[1] || null);
+
+      const userRes = await fetch(`${env.VITE_SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
+        headers: {
+          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+      });
+      const userData = await userRes.json();
+      const email = userData?.email;
+      if (!email) continue;
+
+      await sendBriefingEmail(env, email, bullets);
+    } catch (err) {
+      // Ek user ke liye fail hone se poora batch nahi rukna chahiye.
+      console.error(`Weekly briefing failed for user ${userId}:`, err.message);
+    }
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -213,5 +295,11 @@ export default {
     // wrangler.jsonc, unknown routes fall back to index.html automatically,
     // so client-side routes (e.g. refreshing /listing) still work.
     return env.ASSETS.fetch(request);
+  },
+
+  // UPDATE #2 — cron se trigger hota hai (wrangler.jsonc mein schedule set hai).
+  // Har active subscriber ko weekly profit-briefing email bhejta hai.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(handleWeeklyBriefings(env));
   },
 };

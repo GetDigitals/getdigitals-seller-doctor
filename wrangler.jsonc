@@ -7,5 +7,9 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application"
+  },
+  "triggers": {
+    // Har Monday 8:30 AM IST (= 03:00 UTC) — weekly business briefing email.
+    "crons": ["0 3 * * 1"]
   }
 }
