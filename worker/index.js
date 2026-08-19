@@ -67,40 +67,31 @@ async function handleCreateOrder(request, env) {
   }
 }
 
+async function callGemini(env, messages, maxTokens) {
+  const GEMINI_MODEL = 'gemini-3.6-flash';
+  const contents = messages.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) }],
+  }));
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents,
+      generationConfig: { maxOutputTokens: Math.max(maxTokens || 0, 1024), thinkingConfig: { thinkingLevel: 'minimal' } },
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || 'Gemini API error');
+  return data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '';
+}
+
 async function handleClaudeProxy(request, env) {
   if (request.method !== 'POST') return new Response('Method not allowed', { status: 405 });
   try {
     const { max_tokens, messages } = await request.json();
-
-    // Gemini's current stable Flash model (as of Aug 2026).
-    const GEMINI_MODEL = 'gemini-3.6-flash';
-
-    const contents = messages.map((m) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) }],
-    }));
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          maxOutputTokens: Math.max(max_tokens || 0, 4096),
-          thinkingConfig: { thinkingLevel: 'minimal' },
-        },
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      return json({ error: { message: data?.error?.message || 'Gemini API error' } }, res.status);
-    }
-
-    const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '';
+    const text = await callGemini(env, messages, max_tokens);
     return json({ content: [{ type: 'text', text }] });
   } catch (err) {
     return json({ error: { message: 'Proxy error: ' + err.message } }, 500);

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import { jsPDF } from "jspdf";
 import { supabase } from "./supabaseClient";
 
 const DEMO_ORDERS = [
@@ -378,6 +379,156 @@ Respond ONLY with a JSON object, no markdown, no code fences: {"bullets": ["poin
   return { bullets: parsed.bullets, hasTrend: !!previous };
 }
 
+// UPDATE #1 — Profit Trend Chart: existing snapshots table (Phase 1) se
+// poori history fetch karta hai, taaki ek simple line-chart draw ho sake.
+async function getSnapshotHistory() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("snapshots")
+    .select("created_at, total_profit, total_loss")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: true })
+    .limit(30); // last 30 snapshots — kaafi hai ek readable trend ke liye
+
+  if (error) { console.error("History fetch failed:", error); return []; }
+  return data || [];
+}
+
+// Simple inline SVG line chart — koi charting library nahi chahiye.
+// Sirf 2+ points hone par hi meaningful hota hai.
+function TrendChart({ history }) {
+  if (!history || history.length < 2) {
+    return (
+      <p style={{ fontSize: 13, color: "#9a9a95", margin: 0 }}>
+        Kam se kam 2 analyses chahiye trend dikhane ke liye. Agli baar file upload karo, chart yahan aa jaayega.
+      </p>
+    );
+  }
+
+  const width = 600, height = 160, padding = 24;
+  const values = history.map((h) => h.total_profit || 0);
+  const minVal = Math.min(0, ...values);
+  const maxVal = Math.max(...values, 1);
+  const range = maxVal - minVal || 1;
+
+  const points = history.map((h, i) => {
+    const x = padding + (i / (history.length - 1)) * (width - padding * 2);
+    const y = height - padding - ((h.total_profit - minVal) / range) * (height - padding * 2);
+    return { x, y, profit: h.total_profit, date: h.created_at };
+  });
+
+  const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+  const zeroY = height - padding - ((0 - minVal) / range) * (height - padding * 2);
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "auto" }}>
+      {/* zero line */}
+      <line x1={padding} y1={zeroY} x2={width - padding} y2={zeroY} stroke="#e5e4df" strokeWidth="1" strokeDasharray="4,4" />
+      {/* profit trend line */}
+      <path d={pathD} fill="none" stroke="#3C3489" strokeWidth="2" />
+      {/* points */}
+      {points.map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r="3.5" fill={p.profit >= 0 ? "#1F6B4A" : "#D64545"} />
+      ))}
+      {/* first/last date labels */}
+      <text x={padding} y={height - 4} fontSize="9" fill="#9a9a95">
+        {new Date(points[0].date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+      </text>
+      <text x={width - padding} y={height - 4} fontSize="9" fill="#9a9a95" textAnchor="end">
+        {new Date(points[points.length - 1].date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+      </text>
+    </svg>
+  );
+}
+
+// UPDATE #3 — Downloadable PDF Report: client-side, no backend/API needed.
+// Har row ka SKU, sales, aur profit/loss ek simple table mein, saath mein
+// top recommendations. Bade catalogs ke liye auto page-break hota hai.
+function generatePdfReport(rows, recommendations, totals, businessName) {
+  const doc = new jsPDF();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginLeft = 14;
+  let y = 20;
+
+  doc.setFontSize(18);
+  doc.setTextColor(60, 52, 137); // brand purple
+  doc.text("Seller Doctor — Profit Report", marginLeft, y);
+  y += 8;
+
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  const dateStr = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+  doc.text(`${businessName || "Seller"} · Generated on ${dateStr}`, marginLeft, y);
+  y += 12;
+
+  // Summary block
+  doc.setFontSize(12);
+  doc.setTextColor(20, 20, 20);
+  doc.text(`Total Sales: ₹${Math.round(totals.sales).toLocaleString("en-IN")}`, marginLeft, y);
+  y += 7;
+  doc.text(`Net Profit/Loss: ₹${Math.round(totals.profit).toLocaleString("en-IN")}`, marginLeft, y);
+  y += 7;
+  doc.text(`Hidden Deductions: ₹${Math.round(totals.hidden).toLocaleString("en-IN")}`, marginLeft, y);
+  y += 12;
+
+  // Top recommendations
+  if (recommendations && recommendations.length > 0) {
+    doc.setFontSize(13);
+    doc.setTextColor(60, 52, 137);
+    doc.text("Top Actions", marginLeft, y);
+    y += 7;
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    recommendations.slice(0, 5).forEach((rec) => {
+      const prefix = rec.level === "critical" ? "[CRITICAL] " : "[WARNING] ";
+      const lines = doc.splitTextToSize(`${prefix}${rec.title} — ${rec.reason}`, 180);
+      lines.forEach((line) => {
+        if (y > pageHeight - 20) { doc.addPage(); y = 20; }
+        doc.text(line, marginLeft, y);
+        y += 6;
+      });
+    });
+    y += 6;
+  }
+
+  // Per-SKU table
+  doc.setFontSize(13);
+  doc.setTextColor(60, 52, 137);
+  if (y > pageHeight - 20) { doc.addPage(); y = 20; }
+  doc.text("Per-Product Breakdown", marginLeft, y);
+  y += 8;
+
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  doc.text("SKU", marginLeft, y);
+  doc.text("Sales", marginLeft + 90, y);
+  doc.text("Profit/Loss", marginLeft + 130, y);
+  y += 2;
+  doc.setDrawColor(200, 200, 200);
+  doc.line(marginLeft, y, 196, y);
+  y += 6;
+
+  doc.setFontSize(9);
+  rows.forEach((row) => {
+    if (y > pageHeight - 15) {
+      doc.addPage();
+      y = 20;
+    }
+    const m = computeMetrics(row);
+    const sku = String(row.sku || "—").slice(0, 42);
+    doc.setTextColor(30, 30, 30);
+    doc.text(sku, marginLeft, y);
+    doc.text(`₹${Math.round(row.sales || 0).toLocaleString("en-IN")}`, marginLeft + 90, y);
+    doc.setTextColor(m.profit >= 0 ? 30 : 200, m.profit >= 0 ? 130 : 60, m.profit >= 0 ? 76 : 60);
+    doc.text(`₹${Math.round(m.profit).toLocaleString("en-IN")}`, marginLeft + 130, y);
+    y += 6;
+  });
+
+  doc.save(`seller-doctor-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
 function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) {
   const [rows, setRows] = useState(null);
   const [meesho, setMeesho] = useState(null); // { totals, statusCounts, totalOrders }
@@ -388,9 +539,16 @@ function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) 
   const [aiStatus, setAiStatus] = useState("idle");
   const [briefing, setBriefing] = useState(null);
   const [briefingStatus, setBriefingStatus] = useState("idle"); // idle | loading | done | failed
+  const [trendHistory, setTrendHistory] = useState([]);
   const csvRef = useRef(null);
   const xlsxRef = useRef(null);
   const flipkartRef = useRef(null);
+
+  // Trend chart: purani history load karo jab tool khule (agar hasAccess hai),
+  // taaki returning user ko dobara upload kiye bina bhi trend dikhe.
+  useEffect(() => {
+    if (hasAccess) getSnapshotHistory().then(setTrendHistory);
+  }, [hasAccess]);
 
   const loadRows = async (newRows, meeshoMeta = null) => {
     setRows(newRows);
@@ -403,7 +561,11 @@ function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) 
       const recs = await getAiRecommendations(newRows, meta);
       setRecommendations(recs);
       setAiStatus("done");
-      saveSnapshot(newRows, recs); // fire-and-forget — analysis UI iske liye rukna nahi chahiye
+      // fire-and-forget — analysis UI iske liye rukna nahi chahiye — lekin
+      // save hone ke baad chart ko refresh kar do naye point ke saath.
+      saveSnapshot(newRows, recs).then(() => {
+        getSnapshotHistory().then(setTrendHistory);
+      });
     } catch (err) {
       setRecommendations(buildRuleBasedRecommendations(newRows));
       setAiStatus("failed");
@@ -585,6 +747,24 @@ function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) 
             <p style={{ fontSize: 13, color: "#6b6b68", margin: 0 }}>Koi SKU repeat cancel/return pattern nahi dikh raha.</p>
           )}
         </div>
+      )}
+
+      {rows && hasAccess && (
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
+        <button
+          onClick={() => generatePdfReport(rows, recommendations, totals)}
+          style={{ fontSize: 12.5, background: "#fff", color: "#3C3489", border: "1px solid #3C3489", borderRadius: 20, padding: "7px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+        >
+          📄 Download PDF Report
+        </button>
+      </div>
+      )}
+
+      {rows && hasAccess && (
+      <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: "16px 18px", marginBottom: 20, background: "#FAFAF8" }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 12px" }}>📈 Profit Trend</h2>
+        <TrendChart history={trendHistory} />
+      </div>
       )}
 
       {rows && hasAccess && (
