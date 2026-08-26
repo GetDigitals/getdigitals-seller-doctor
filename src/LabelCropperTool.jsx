@@ -1,0 +1,344 @@
+// LabelCropperTool.jsx
+//
+// A paid-plan feature: crop shipping labels out of Meesho / Flipkart / Amazon
+// seller-panel PDFs (which usually bundle the label together with an
+// invoice or extra blank space on the same page).
+//
+// How it works:
+//   1. Seller picks their platform (just changes the starting guess box).
+//   2. Seller uploads the PDF they downloaded from their seller panel.
+//   3. We render page 1 with pdf.js and show a draggable/resizable box the
+//      seller can adjust so it sits exactly over the label.
+//   4. On confirm, we use pdf-lib to set that same crop box on every page of
+//      the real PDF (a true vector crop — barcodes/QR stay full quality,
+//      nothing is rasterized) and offer the cropped file for download.
+//   5. The chosen box is remembered per platform in localStorage, so next
+//      time the seller uploads a same-platform file the box is already in
+//      the right place — no repeat fiddling.
+//
+// This intentionally does NOT try to "AI-auto-detect" the label region,
+// because Meesho/Flipkart/Amazon PDF layouts vary by seller settings (page
+// size, whether invoice is attached, single vs multi-order files). A
+// remembered, seller-adjusted box is more reliable than a guess that could
+// silently clip a barcode.
+
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import { PDFDocument } from "pdf-lib";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
+const PLATFORMS = [
+  { id: "meesho", label: "Meesho", icon: "🟣", defaultBox: { x: 0.04, y: 0.03, w: 0.92, h: 0.46 } },
+  { id: "flipkart", label: "Flipkart", icon: "🟡", defaultBox: { x: 0.04, y: 0.03, w: 0.92, h: 0.42 } },
+  { id: "amazon", label: "Amazon", icon: "🟠", defaultBox: { x: 0.03, y: 0.02, w: 0.94, h: 0.5 } },
+];
+
+const STORAGE_PREFIX = "gd_label_crop_box_";
+
+function loadSavedBox(platformId) {
+  try {
+    const raw = localStorage.getItem(STORAGE_PREFIX + platformId);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      typeof parsed.x === "number" && typeof parsed.y === "number" &&
+      typeof parsed.w === "number" && typeof parsed.h === "number"
+    ) return parsed;
+  } catch (_) {}
+  return null;
+}
+
+function saveBox(platformId, box) {
+  try { localStorage.setItem(STORAGE_PREFIX + platformId, JSON.stringify(box)); } catch (_) {}
+}
+
+const HANDLE_SIZE = 14;
+
+export default function LabelCropperTool({ onBack }) {
+  const [platform, setPlatform] = useState("meesho");
+  const [file, setFile] = useState(null);
+  const [pdfBytes, setPdfBytes] = useState(null); // ArrayBuffer of the uploaded file
+  const [pageCount, setPageCount] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState(null); // rendered page-1 image
+  const [previewSize, setPreviewSize] = useState({ w: 0, h: 0 }); // rendered canvas px size
+  const [box, setBox] = useState(PLATFORMS[0].defaultBox); // normalized 0..1 crop box
+  const [status, setStatus] = useState("idle"); // idle | rendering | ready | cropping | done | error
+  const [error, setError] = useState("");
+  const [resultUrl, setResultUrl] = useState(null);
+  const [resultName, setResultName] = useState("");
+  const fileInputRef = useRef(null);
+  const stageRef = useRef(null);
+  const dragState = useRef(null);
+
+  const platformDef = PLATFORMS.find((p) => p.id === platform);
+
+  // Switching platform (before a file is loaded) updates the starting box.
+  useEffect(() => {
+    if (!previewUrl) {
+      const saved = loadSavedBox(platform);
+      setBox(saved || platformDef.defaultBox);
+    }
+  }, [platform]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const resetAll = () => {
+    setFile(null);
+    setPdfBytes(null);
+    setPageCount(0);
+    setPreviewUrl(null);
+    setPreviewSize({ w: 0, h: 0 });
+    setStatus("idle");
+    setError("");
+    setResultUrl(null);
+    setResultName("");
+  };
+
+  const handleUpload = async (f) => {
+    setError("");
+    setResultUrl(null);
+    if (!f || f.type !== "application/pdf") {
+      setError("Sirf PDF file upload karo — jo seller panel se download hoti hai.");
+      return;
+    }
+    setStatus("rendering");
+    try {
+      const buf = await f.arrayBuffer();
+      setFile(f);
+      setPdfBytes(buf);
+
+      const loadingTask = pdfjsLib.getDocument({ data: buf.slice(0) });
+      const pdf = await loadingTask.promise;
+      setPageCount(pdf.numPages);
+
+      const page = await pdf.getPage(1);
+      const scale = 1.6;
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext("2d");
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      setPreviewUrl(canvas.toDataURL("image/png"));
+      setPreviewSize({ w: viewport.width, h: viewport.height });
+
+      const saved = loadSavedBox(platform);
+      setBox(saved || platformDef.defaultBox);
+      setStatus("ready");
+    } catch (err) {
+      console.error(err);
+      setError("PDF read nahi ho payi — file corrupt ho sakti hai ya password-protected hai.");
+      setStatus("error");
+    }
+  };
+
+  // ---- Drag / resize handling for the crop box overlay ----
+  const onPointerDown = (e, mode) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const stage = stageRef.current;
+    if (!stage) return;
+    const rect = stage.getBoundingClientRect();
+    dragState.current = {
+      mode, // 'move' | 'nw' | 'ne' | 'sw' | 'se'
+      startX: e.clientX,
+      startY: e.clientY,
+      rectW: rect.width,
+      rectH: rect.height,
+      startBox: { ...box },
+    };
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+  };
+
+  const onPointerMove = useCallback((e) => {
+    const ds = dragState.current;
+    if (!ds) return;
+    const dx = (e.clientX - ds.startX) / ds.rectW;
+    const dy = (e.clientY - ds.startY) / ds.rectH;
+    let { x, y, w, h } = ds.startBox;
+
+    if (ds.mode === "move") {
+      x = clamp(ds.startBox.x + dx, 0, 1 - ds.startBox.w);
+      y = clamp(ds.startBox.y + dy, 0, 1 - ds.startBox.h);
+    } else {
+      if (ds.mode.includes("w")) { x = clamp(ds.startBox.x + dx, 0, ds.startBox.x + ds.startBox.w - 0.05); w = ds.startBox.w - (x - ds.startBox.x); }
+      if (ds.mode.includes("e")) { w = clamp(ds.startBox.w + dx, 0.05, 1 - ds.startBox.x); }
+      if (ds.mode.includes("n")) { y = clamp(ds.startBox.y + dy, 0, ds.startBox.y + ds.startBox.h - 0.05); h = ds.startBox.h - (y - ds.startBox.y); }
+      if (ds.mode.includes("s")) { h = clamp(ds.startBox.h + dy, 0.05, 1 - ds.startBox.y); }
+    }
+    setBox({ x, y, w, h });
+  }, []);
+
+  const onPointerUp = useCallback(() => {
+    dragState.current = null;
+    window.removeEventListener("pointermove", onPointerMove);
+    window.removeEventListener("pointerup", onPointerUp);
+  }, [onPointerMove]);
+
+  useEffect(() => () => {
+    window.removeEventListener("pointermove", onPointerMove);
+    window.removeEventListener("pointerup", onPointerUp);
+  }, [onPointerMove, onPointerUp]);
+
+  // ---- Actual crop + export, using pdf-lib (vector crop, all pages) ----
+  const handleCropAndDownload = async () => {
+    if (!pdfBytes) return;
+    setStatus("cropping");
+    setError("");
+    try {
+      const doc = await PDFDocument.load(pdfBytes);
+      const pages = doc.getPages();
+      pages.forEach((page) => {
+        const { width, height } = page.getSize();
+        // PDF coordinate origin is bottom-left; our box.y is measured from
+        // the top of the preview, so flip it.
+        const cropX = box.x * width;
+        const cropW = box.w * width;
+        const cropH = box.h * height;
+        const cropY = height - (box.y * height) - cropH;
+        page.setCropBox(cropX, cropY, cropW, cropH);
+        page.setMediaBox(cropX, cropY, cropW, cropH);
+      });
+      const outBytes = await doc.save();
+      const blob = new Blob([outBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const base = (file?.name || "labels").replace(/\.pdf$/i, "");
+      setResultUrl(url);
+      setResultName(`${base}-${platform}-labels-only.pdf`);
+      saveBox(platform, box);
+      setStatus("done");
+    } catch (err) {
+      console.error(err);
+      setError("Crop karte waqt error aayi — file dobara try karo.");
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: 720, margin: "0 auto", fontFamily: "system-ui, sans-serif", color: "#1a1a1a", padding: "24px 16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: "#0F6E56", textTransform: "uppercase", margin: "0 0 4px" }}>GetDigitals Seller Doctor</p>
+          <h1 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>Label Cropper</h1>
+        </div>
+        <button onClick={onBack} style={{ background: "transparent", color: "#6b6b68", border: "1px solid #e5e4df", padding: "6px 12px", borderRadius: 8, fontSize: 13, cursor: "pointer" }}>← Wapas</button>
+      </div>
+
+      <p style={{ fontSize: 13, color: "#6b6b68", margin: "0 0 18px", lineHeight: 1.6 }}>
+        Apni Meesho, Flipkart ya Amazon shipping label PDF upload karo — invoice/extra space hata ke sirf label crop karke download milega. Sab pages pe same crop apply hoga.
+      </p>
+
+      {/* Platform picker */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
+        {PLATFORMS.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => { setPlatform(p.id); if (!previewUrl) resetAll(); }}
+            style={{
+              flex: 1, padding: "10px 8px", borderRadius: 8, fontSize: 13.5, fontWeight: 600, cursor: "pointer",
+              border: platform === p.id ? "1.5px solid #0F6E56" : "1px solid #e5e4df",
+              background: platform === p.id ? "#EAF6F2" : "#fff",
+              color: platform === p.id ? "#0F6E56" : "#6b6b68",
+            }}
+          >
+            {p.icon} {p.label}
+          </button>
+        ))}
+      </div>
+
+      {!previewUrl && (
+        <div style={{ maxWidth: 480, margin: "20px auto", textAlign: "center" }}>
+          <input type="file" accept="application/pdf" ref={fileInputRef} style={{ display: "none" }} onChange={(e) => e.target.files[0] && handleUpload(e.target.files[0])} />
+          <button
+            onClick={() => fileInputRef.current.click()}
+            disabled={status === "rendering"}
+            style={{ background: "#0F6E56", color: "#fff", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", width: "100%", opacity: status === "rendering" ? 0.6 : 1 }}
+          >
+            {status === "rendering" ? "PDF load ho rahi hai..." : `${platformDef.label} label PDF upload karo`}
+          </button>
+          {error && <p style={{ color: "#A32D2D", fontSize: 13, marginTop: 14 }}>{error}</p>}
+          <p style={{ fontSize: 11, color: "#9a9a95", marginTop: 14, lineHeight: 1.6 }}>
+            File sirf tumhare browser mein process hoti hai — kahi upload/store nahi hoti.
+          </p>
+        </div>
+      )}
+
+      {previewUrl && status !== "done" && (
+        <>
+          <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 8px" }}>
+            Box ko drag/resize karke label ke upar exactly set karo (page 1 ka preview — same box sabhi {pageCount} pages pe lagega):
+          </p>
+          <div
+            ref={stageRef}
+            style={{ position: "relative", width: "100%", maxWidth: 460, margin: "0 auto", border: "1px solid #e5e4df", borderRadius: 8, overflow: "hidden", touchAction: "none" }}
+          >
+            <img src={previewUrl} alt="PDF page 1 preview" style={{ display: "block", width: "100%", userSelect: "none", pointerEvents: "none" }} draggable={false} />
+            <div
+              onPointerDown={(e) => onPointerDown(e, "move")}
+              style={{
+                position: "absolute",
+                left: `${box.x * 100}%`, top: `${box.y * 100}%`,
+                width: `${box.w * 100}%`, height: `${box.h * 100}%`,
+                border: "2px solid #0F6E56", background: "rgba(15,110,86,0.12)", cursor: "move",
+              }}
+            >
+              {["nw", "ne", "sw", "se"].map((corner) => (
+                <div
+                  key={corner}
+                  onPointerDown={(e) => onPointerDown(e, corner)}
+                  style={{
+                    position: "absolute", width: HANDLE_SIZE, height: HANDLE_SIZE, background: "#0F6E56", borderRadius: 3,
+                    cursor: `${corner}-resize`,
+                    top: corner.includes("n") ? -HANDLE_SIZE / 2 : undefined,
+                    bottom: corner.includes("s") ? -HANDLE_SIZE / 2 : undefined,
+                    left: corner.includes("w") ? -HANDLE_SIZE / 2 : undefined,
+                    right: corner.includes("e") ? -HANDLE_SIZE / 2 : undefined,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+            <button onClick={resetAll} style={{ flex: "0 0 auto", background: "transparent", color: "#6b6b68", border: "1px solid #e5e4df", padding: "12px 18px", borderRadius: 8, fontSize: 14, cursor: "pointer" }}>
+              Naya file
+            </button>
+            <button
+              onClick={handleCropAndDownload}
+              disabled={status === "cropping"}
+              style={{ flex: 1, background: "#0F6E56", color: "#fff", border: "none", padding: "12px 18px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", opacity: status === "cropping" ? 0.7 : 1 }}
+            >
+              {status === "cropping" ? "Crop ho raha hai..." : `✂️ Crop Karo — Sabhi ${pageCount} Pages`}
+            </button>
+          </div>
+          {error && <p style={{ color: "#A32D2D", fontSize: 13, marginTop: 12 }}>{error}</p>}
+        </>
+      )}
+
+      {status === "done" && resultUrl && (
+        <div style={{ textAlign: "center", marginTop: 10 }}>
+          <div style={{ background: "#EAF6F2", border: "1px solid #0F6E56", borderRadius: 10, padding: "20px 16px", marginBottom: 16 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#0F6E56", margin: "0 0 4px" }}>✅ Ho gaya — {pageCount} label{pageCount > 1 ? "s" : ""} crop ho gaye</p>
+            <p style={{ fontSize: 12.5, color: "#6b6b68", margin: 0 }}>Ye crop box agli baar {platformDef.label} ke liye yaad rahega.</p>
+          </div>
+          <a
+            href={resultUrl}
+            download={resultName}
+            style={{ display: "block", background: "#0F6E56", color: "#fff", padding: "13px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, textDecoration: "none", marginBottom: 10 }}
+          >
+            ⬇️ Cropped PDF Download Karo
+          </a>
+          <button onClick={resetAll} style={{ background: "transparent", color: "#6b6b68", border: "1px solid #e5e4df", padding: "10px 18px", borderRadius: 8, fontSize: 13, cursor: "pointer" }}>
+            Ek aur file crop karo
+          </button>
+        </div>
+      )}
+
+      <p style={{ fontSize: 11, color: "#c2c1bc", marginTop: 28, textAlign: "center" }}>GetDigitals Seller Doctor</p>
+    </div>
+  );
+}
+
+function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }

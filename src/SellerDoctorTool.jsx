@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import LabelCropperTool from "./LabelCropperTool";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
@@ -529,7 +530,7 @@ function generatePdfReport(rows, recommendations, totals, businessName) {
   doc.save(`seller-doctor-report-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
-function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) {
+function ProfitDashboardApp({ onOpenListingTool, onOpenLabelCropper, hasAccess, onRequestPayment }) {
   const [rows, setRows] = useState(null);
   const [meesho, setMeesho] = useState(null); // { totals, statusCounts, totalOrders }
   const [flipkart, setFlipkart] = useState(null); // { totalOrders, statusCounts, slaBreaches, riskySkus }
@@ -667,6 +668,10 @@ function ProfitDashboardApp({ onOpenListingTool, hasAccess, onRequestPayment }) 
 
         <button onClick={() => (hasAccess ? onOpenListingTool() : onRequestPayment())} style={{ background: "#f4f3ef", color: "#1a1a1a", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 10, opacity: hasAccess ? 1 : 0.75 }}>
           📋 Listing Draft Generator (beta) →{lockIcon}
+        </button>
+
+        <button onClick={() => (hasAccess ? onOpenLabelCropper() : onRequestPayment())} style={{ background: "#f4f3ef", color: "#1a1a1a", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 10, opacity: hasAccess ? 1 : 0.75 }}>
+          ✂️ Label Cropper — Meesho/Flipkart/Amazon →{lockIcon}
         </button>
 
         <a href="/toolkit/" target="_blank" rel="noreferrer" style={{ display: "block", textAlign: "center", background: "#EAF6F2", color: "#0F6E56", border: "1px solid #0F6E56", padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", width: "100%", boxSizing: "border-box" }}>
@@ -1562,10 +1567,18 @@ function ListingDraftTool({ onBack }) {
 }
 
 export default function SellerDoctorTool({ hasAccess = true, onRequestPayment = () => {} }) {
-  const [mode, setMode] = useState("main"); // main | listing
-  // mode only ever becomes "listing" via onOpenListingTool, which itself
-  // checks hasAccess first — so an unpaid user never actually reaches
-  // ListingDraftTool. No extra guard needed here.
+  const [mode, setMode] = useState("main"); // main | listing | labelcrop
+  // mode only ever becomes "listing"/"labelcrop" via the onOpen* callbacks,
+  // which themselves check hasAccess first — so an unpaid user never
+  // actually reaches these screens. No extra guard needed here.
   if (mode === "listing") return <ListingDraftTool onBack={() => setMode("main")} />;
-  return <ProfitDashboardApp onOpenListingTool={() => setMode("listing")} hasAccess={hasAccess} onRequestPayment={onRequestPayment} />;
+  if (mode === "labelcrop") return <LabelCropperTool onBack={() => setMode("main")} />;
+  return (
+    <ProfitDashboardApp
+      onOpenListingTool={() => setMode("listing")}
+      onOpenLabelCropper={() => setMode("labelcrop")}
+      hasAccess={hasAccess}
+      onRequestPayment={onRequestPayment}
+    />
+  );
 }
