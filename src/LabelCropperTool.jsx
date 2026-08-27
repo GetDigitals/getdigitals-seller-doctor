@@ -37,6 +37,33 @@ const PLATFORMS = [
 
 const STORAGE_PREFIX = "gd_label_crop_box_";
 
+// Bulk PDFs from Meesho/Flipkart/Amazon almost always mix TWO different page
+// types together: an actual shipping LABEL page (barcode/AWB/address) and a
+// separate TAX INVOICE page (HSN, GST, "E. & O.E." etc.) — sometimes one
+// page each per order, sometimes all labels first then all invoices. If we
+// blindly apply the same "label" crop box to an invoice page, we cut a
+// meaningless chunk out of it instead of a label. So before cropping, every
+// page's text is scanned for these invoice-only markers (they're standard
+// GST-invoice wording, consistent across all three platforms) and any page
+// that matches is dropped from the output rather than cropped.
+const INVOICE_MARKERS = [
+  "e. & o.e.", "e & o e", "tax invoice", "hsn", "seller registered address",
+  "total qty", "taxable value", "irn", "cess", "gstin",
+];
+const INVOICE_MARKER_MIN_HITS = 2;
+
+async function classifyPages(pdfjsDoc) {
+  const results = [];
+  for (let i = 1; i <= pdfjsDoc.numPages; i++) {
+    const page = await pdfjsDoc.getPage(i);
+    const content = await page.getTextContent();
+    const text = content.items.map((it) => it.str).join(" ").toLowerCase();
+    const hits = INVOICE_MARKERS.reduce((n, marker) => n + (text.includes(marker) ? 1 : 0), 0);
+    results.push({ pageIndex: i - 1, isInvoice: hits >= INVOICE_MARKER_MIN_HITS });
+  }
+  return results;
+}
+
 function loadSavedBox(platformId) {
   try {
     const raw = localStorage.getItem(STORAGE_PREFIX + platformId);
@@ -64,10 +91,13 @@ export default function LabelCropperTool({ onBack }) {
   const [previewUrl, setPreviewUrl] = useState(null); // rendered page-1 image
   const [previewSize, setPreviewSize] = useState({ w: 0, h: 0 }); // rendered canvas px size
   const [box, setBox] = useState(PLATFORMS[0].defaultBox); // normalized 0..1 crop box
+  const [pageClassification, setPageClassification] = useState([]); // [{pageIndex, isInvoice}]
+  const [keepOnlyLabels, setKeepOnlyLabels] = useState(true);
   const [status, setStatus] = useState("idle"); // idle | rendering | ready | cropping | done | error
   const [error, setError] = useState("");
   const [resultUrl, setResultUrl] = useState(null);
   const [resultName, setResultName] = useState("");
+  const [resultCount, setResultCount] = useState(0);
   const fileInputRef = useRef(null);
   const stageRef = useRef(null);
   const dragState = useRef(null);
@@ -92,6 +122,7 @@ export default function LabelCropperTool({ onBack }) {
     setError("");
     setResultUrl(null);
     setResultName("");
+    setPageClassification([]);
   };
 
   const handleUpload = async (f) => {
@@ -111,7 +142,12 @@ export default function LabelCropperTool({ onBack }) {
       const pdf = await loadingTask.promise;
       setPageCount(pdf.numPages);
 
-      const page = await pdf.getPage(1);
+      const classification = await classifyPages(pdf);
+      setPageClassification(classification);
+      const firstLabelEntry = classification.find((c) => !c.isInvoice);
+      const previewPageNum = firstLabelEntry ? firstLabelEntry.pageIndex + 1 : 1;
+
+      const page = await pdf.getPage(previewPageNum);
       const scale = 1.6;
       const viewport = page.getViewport({ scale });
       const canvas = document.createElement("canvas");
@@ -182,7 +218,7 @@ export default function LabelCropperTool({ onBack }) {
     window.removeEventListener("pointerup", onPointerUp);
   }, [onPointerMove, onPointerUp]);
 
-  // ---- Actual crop + export, using pdf-lib (vector crop, all pages) ----
+  // ---- Actual crop + export, using pdf-lib (vector crop, only label pages) ----
   const handleCropAndDownload = async () => {
     if (!pdfBytes) return;
     setStatus("cropping");
@@ -190,7 +226,10 @@ export default function LabelCropperTool({ onBack }) {
     try {
       const doc = await PDFDocument.load(pdfBytes);
       const pages = doc.getPages();
-      pages.forEach((page) => {
+      const isInvoiceAt = (idx) => keepOnlyLabels && pageClassification[idx]?.isInvoice;
+
+      pages.forEach((page, idx) => {
+        if (isInvoiceAt(idx)) return; // leave invoice pages uncropped for now — dropped below
         const { width, height } = page.getSize();
         // PDF coordinate origin is bottom-left; our box.y is measured from
         // the top of the preview, so flip it.
@@ -201,12 +240,27 @@ export default function LabelCropperTool({ onBack }) {
         page.setCropBox(cropX, cropY, cropW, cropH);
         page.setMediaBox(cropX, cropY, cropW, cropH);
       });
+
+      // Drop invoice/non-label pages entirely, highest index first so
+      // removal doesn't shift the indices we still need to remove.
+      for (let idx = pages.length - 1; idx >= 0; idx--) {
+        if (isInvoiceAt(idx)) doc.removePage(idx);
+      }
+
+      const keptCount = doc.getPageCount();
+      if (keptCount === 0) {
+        setError("Koi bhi page label jaisa detect nahi hua — 'Sirf label pages rakho' option untick karke try karo.");
+        setStatus("ready");
+        return;
+      }
+
       const outBytes = await doc.save();
       const blob = new Blob([outBytes], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const base = (file?.name || "labels").replace(/\.pdf$/i, "");
       setResultUrl(url);
       setResultName(`${base}-${platform}-labels-only.pdf`);
+      setResultCount(keptCount);
       saveBox(platform, box);
       setStatus("done");
     } catch (err) {
@@ -227,7 +281,7 @@ export default function LabelCropperTool({ onBack }) {
       </div>
 
       <p style={{ fontSize: 13, color: "#6b6b68", margin: "0 0 18px", lineHeight: 1.6 }}>
-        Apni Meesho, Flipkart ya Amazon shipping label PDF upload karo — invoice/extra space hata ke sirf label crop karke download milega. Sab pages pe same crop apply hoga.
+        Apni Meesho, Flipkart ya Amazon bulk PDF upload karo — invoice pages apne aap detect karke hata di jaati hain, sirf clean labels crop karke milte hain.
       </p>
 
       {/* Platform picker */}
@@ -267,14 +321,27 @@ export default function LabelCropperTool({ onBack }) {
 
       {previewUrl && status !== "done" && (
         <>
+          {(() => {
+            const invoiceCount = pageClassification.filter((c) => c.isInvoice).length;
+            const labelCount = pageClassification.length - invoiceCount;
+            return invoiceCount > 0 ? (
+              <div style={{ background: "#FFF7E6", border: "1px solid #F0C36D", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 12.5, color: "#7a5b12" }}>
+                📄 {labelCount} label page{labelCount === 1 ? "" : "s"} aur {invoiceCount} invoice/extra page{invoiceCount === 1 ? "" : "s"} detect hui — invoice pages final PDF mein nahi aayengi.
+                <label style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, cursor: "pointer" }}>
+                  <input type="checkbox" checked={keepOnlyLabels} onChange={(e) => setKeepOnlyLabels(e.target.checked)} />
+                  Sirf label pages rakho (invoice hata do)
+                </label>
+              </div>
+            ) : null;
+          })()}
           <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 8px" }}>
-            Box ko drag/resize karke label ke upar exactly set karo (page 1 ka preview — same box sabhi {pageCount} pages pe lagega):
+            Box ko drag/resize karke label ke upar exactly set karo (label page ka preview — same box har detected label page pe lagega):
           </p>
           <div
             ref={stageRef}
             style={{ position: "relative", width: "100%", maxWidth: 460, margin: "0 auto", border: "1px solid #e5e4df", borderRadius: 8, overflow: "hidden", touchAction: "none" }}
           >
-            <img src={previewUrl} alt="PDF page 1 preview" style={{ display: "block", width: "100%", userSelect: "none", pointerEvents: "none" }} draggable={false} />
+            <img src={previewUrl} alt="PDF label page preview" style={{ display: "block", width: "100%", userSelect: "none", pointerEvents: "none" }} draggable={false} />
             <div
               onPointerDown={(e) => onPointerDown(e, "move")}
               style={{
@@ -310,7 +377,11 @@ export default function LabelCropperTool({ onBack }) {
               disabled={status === "cropping"}
               style={{ flex: 1, background: "#0F6E56", color: "#fff", border: "none", padding: "12px 18px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", opacity: status === "cropping" ? 0.7 : 1 }}
             >
-              {status === "cropping" ? "Crop ho raha hai..." : `✂️ Crop Karo — Sabhi ${pageCount} Pages`}
+              {status === "cropping" ? "Crop ho raha hai..." : (() => {
+                const invoiceCount = pageClassification.filter((c) => c.isInvoice).length;
+                const labelCount = keepOnlyLabels ? pageClassification.length - invoiceCount : pageCount;
+                return `✂️ Crop Karo — ${labelCount || pageCount} Label${labelCount === 1 ? "" : "s"}`;
+              })()}
             </button>
           </div>
           {error && <p style={{ color: "#A32D2D", fontSize: 13, marginTop: 12 }}>{error}</p>}
@@ -320,7 +391,7 @@ export default function LabelCropperTool({ onBack }) {
       {status === "done" && resultUrl && (
         <div style={{ textAlign: "center", marginTop: 10 }}>
           <div style={{ background: "#EAF6F2", border: "1px solid #0F6E56", borderRadius: 10, padding: "20px 16px", marginBottom: 16 }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#0F6E56", margin: "0 0 4px" }}>✅ Ho gaya — {pageCount} label{pageCount > 1 ? "s" : ""} crop ho gaye</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#0F6E56", margin: "0 0 4px" }}>✅ Ho gaya — {resultCount} label{resultCount > 1 ? "s" : ""} crop ho gaye</p>
             <p style={{ fontSize: 12.5, color: "#6b6b68", margin: 0 }}>Ye crop box agli baar {platformDef.label} ke liye yaad rahega.</p>
           </div>
           <a
