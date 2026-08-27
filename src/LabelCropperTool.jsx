@@ -49,7 +49,7 @@ const STORAGE_PREFIX = "gd_label_crop_box_";
 const INVOICE_MARKERS = [
   "e. & o.e.", "e & o e", "tax invoice", "hsn", "seller registered address",
   "total qty", "taxable value", "irn", "cess", "gstin",
-];
+].map((m) => m.replace(/[^a-z0-9]/g, ""));
 const INVOICE_MARKER_MIN_HITS = 2;
 
 async function classifyPages(pdfjsDoc) {
@@ -57,8 +57,15 @@ async function classifyPages(pdfjsDoc) {
   for (let i = 1; i <= pdfjsDoc.numPages; i++) {
     const page = await pdfjsDoc.getPage(i);
     const content = await page.getTextContent();
-    const text = content.items.map((it) => it.str).join(" ").toLowerCase();
-    const hits = INVOICE_MARKERS.reduce((n, marker) => n + (text.includes(marker) ? 1 : 0), 0);
+    // pdf.js splits text into arbitrary fragments; joining with spaces can
+    // still leave inconsistent spacing/punctuation around fragment
+    // boundaries (e.g. "Seller Registered  Address" or "E .& O . E ."), so
+    // multi-word/punctuated markers can silently fail to match on a raw
+    // joined string. Stripping everything except letters/digits before
+    // comparing makes the match immune to that.
+    const rawText = content.items.map((it) => it.str).join(" ").toLowerCase();
+    const normalized = rawText.replace(/[^a-z0-9]/g, "");
+    const hits = INVOICE_MARKERS.reduce((n, marker) => n + (normalized.includes(marker) ? 1 : 0), 0);
     results.push({ pageIndex: i - 1, isInvoice: hits >= INVOICE_MARKER_MIN_HITS });
   }
   return results;
