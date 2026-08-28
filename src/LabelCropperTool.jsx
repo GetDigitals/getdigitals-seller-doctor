@@ -37,20 +37,26 @@ const PLATFORMS = [
 
 const STORAGE_PREFIX = "gd_label_crop_box_";
 
-// Bulk PDFs from Meesho/Flipkart/Amazon almost always mix TWO different page
-// types together: an actual shipping LABEL page (barcode/AWB/address) and a
-// separate TAX INVOICE page (HSN, GST, "E. & O.E." etc.) — sometimes one
-// page each per order, sometimes all labels first then all invoices. If we
-// blindly apply the same "label" crop box to an invoice page, we cut a
-// meaningless chunk out of it instead of a label. So before cropping, every
-// page's text is scanned for these invoice-only markers (they're standard
-// GST-invoice wording, consistent across all three platforms) and any page
-// that matches is dropped from the output rather than cropped.
+// Bulk PDFs from Meesho/Flipkart/Amazon mix pages in different ways:
+// sometimes the label and its tax invoice are on two SEPARATE pages,
+// sometimes they're printed on the SAME page (barcode/AWB block on top,
+// a full GST tax-invoice table right below it). Scanning only for invoice
+// wording would wrongly drop that second, combined-page case too — it has
+// plenty of "HSN"/"Seller Registered Address"/"E. & O.E." text even though
+// the top half is a perfectly good, croppable label. So a page is only
+// treated as invoice-only (and dropped) when it has invoice wording AND
+// none of these label-only markers, which are standard across all three
+// platforms' shipping labels.
 const INVOICE_MARKERS = [
   "e. & o.e.", "e & o e", "tax invoice", "hsn", "seller registered address",
   "total qty", "taxable value", "irn", "cess", "gstin",
 ].map((m) => m.replace(/[^a-z0-9]/g, ""));
 const INVOICE_MARKER_MIN_HITS = 2;
+
+const LABEL_MARKERS = [
+  "awb", "ordered through", "hbd", "cpd", "destination code",
+  "not for resale", "shipping/customer address",
+].map((m) => m.replace(/[^a-z0-9]/g, ""));
 
 async function classifyPages(pdfjsDoc) {
   const results = [];
@@ -65,8 +71,10 @@ async function classifyPages(pdfjsDoc) {
     // comparing makes the match immune to that.
     const rawText = content.items.map((it) => it.str).join(" ").toLowerCase();
     const normalized = rawText.replace(/[^a-z0-9]/g, "");
-    const hits = INVOICE_MARKERS.reduce((n, marker) => n + (normalized.includes(marker) ? 1 : 0), 0);
-    results.push({ pageIndex: i - 1, isInvoice: hits >= INVOICE_MARKER_MIN_HITS });
+    const invoiceHits = INVOICE_MARKERS.reduce((n, marker) => n + (normalized.includes(marker) ? 1 : 0), 0);
+    const hasLabelMarker = LABEL_MARKERS.some((marker) => normalized.includes(marker));
+    const isInvoice = invoiceHits >= INVOICE_MARKER_MIN_HITS && !hasLabelMarker;
+    results.push({ pageIndex: i - 1, isInvoice });
   }
   return results;
 }
