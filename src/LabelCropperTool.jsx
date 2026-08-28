@@ -31,7 +31,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 const PLATFORMS = [
   { id: "meesho", label: "Meesho", icon: "🟣", defaultBox: { x: 0.04, y: 0.03, w: 0.92, h: 0.46 } },
-  { id: "flipkart", label: "Flipkart", icon: "🟡", defaultBox: { x: 0.04, y: 0.03, w: 0.92, h: 0.42 } },
+  { id: "flipkart", label: "Flipkart", icon: "🟡", defaultBox: { x: 0.04, y: 0.02, w: 0.92, h: 0.48 } },
   { id: "amazon", label: "Amazon", icon: "🟠", defaultBox: { x: 0.03, y: 0.02, w: 0.94, h: 0.5 } },
 ];
 
@@ -115,6 +115,8 @@ export default function LabelCropperTool({ onBack }) {
   const fileInputRef = useRef(null);
   const stageRef = useRef(null);
   const dragState = useRef(null);
+  const boxRef = useRef(box);
+  useEffect(() => { boxRef.current = box; }, [box]);
 
   const platformDef = PLATFORMS.find((p) => p.id === platform);
 
@@ -225,7 +227,11 @@ export default function LabelCropperTool({ onBack }) {
     dragState.current = null;
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", onPointerUp);
-  }, [onPointerMove]);
+    // Remember the adjusted box immediately, so the NEXT upload for this
+    // platform starts here automatically — the seller shouldn't have to
+    // re-fit the box every single time, only fine-tune it if needed.
+    saveBox(platform, boxRef.current);
+  }, [onPointerMove, platform]);
 
   useEffect(() => () => {
     window.removeEventListener("pointermove", onPointerMove);
