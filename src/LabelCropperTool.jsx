@@ -58,6 +58,33 @@ const LABEL_MARKERS = [
   "not for resale", "shipping/customer address",
 ].map((m) => m.replace(/[^a-z0-9]/g, ""));
 
+// On combined label+invoice pages, the "Tax Invoice" heading marks exactly
+// where the invoice section begins — so instead of guessing a fixed crop
+// height per platform, we look up that heading's real Y position on the
+// page and use it to compute the correct height for THIS specific file.
+// This works for any seller's page margins/layout without anyone needing
+// to manually adjust the box.
+async function findLabelBottomFraction(page) {
+  const [content, viewport] = await Promise.all([
+    page.getTextContent(),
+    page.getViewport({ scale: 1 }),
+  ]);
+  const items = content.items;
+  const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  for (let i = 0; i < items.length; i++) {
+    const single = norm(items[i].str);
+    const pair = i + 1 < items.length ? norm(items[i].str + items[i + 1].str) : "";
+    if (single === "taxinvoice" || pair === "taxinvoice") {
+      const yFromBottom = items[i].transform[5];
+      const fractionFromTop = 1 - yFromBottom / viewport.height;
+      // Small buffer above the heading so its top edge/underline isn't
+      // clipped right at the crop line.
+      return Math.max(0.05, fractionFromTop - 0.012);
+    }
+  }
+  return null;
+}
+
 async function classifyPages(pdfjsDoc) {
   const results = [];
   for (let i = 1; i <= pdfjsDoc.numPages; i++) {
@@ -74,7 +101,8 @@ async function classifyPages(pdfjsDoc) {
     const invoiceHits = INVOICE_MARKERS.reduce((n, marker) => n + (normalized.includes(marker) ? 1 : 0), 0);
     const hasLabelMarker = LABEL_MARKERS.some((marker) => normalized.includes(marker));
     const isInvoice = invoiceHits >= INVOICE_MARKER_MIN_HITS && !hasLabelMarker;
-    results.push({ pageIndex: i - 1, isInvoice });
+    const labelBottomFraction = isInvoice ? null : await findLabelBottomFraction(page);
+    results.push({ pageIndex: i - 1, isInvoice, labelBottomFraction });
   }
   return results;
 }
@@ -176,7 +204,17 @@ export default function LabelCropperTool({ onBack }) {
       setPreviewSize({ w: viewport.width, h: viewport.height });
 
       const saved = loadSavedBox(platform);
-      setBox(saved || platformDef.defaultBox);
+      const base = saved || platformDef.defaultBox;
+      const detectedBottom = firstLabelEntry?.labelBottomFraction;
+      // Prefer the per-file detected boundary for height/top — it's exact
+      // for this specific PDF, so it works correctly the very first time,
+      // for every seller, without anyone adjusting anything. Horizontal
+      // fit isn't auto-detectable the same way, so that still comes from
+      // the saved/default box.
+      const box = detectedBottom
+        ? { x: base.x, y: 0.02, w: base.w, h: Math.max(0.1, detectedBottom - 0.02) }
+        : base;
+      setBox(box);
       setStatus("ready");
     } catch (err) {
       console.error(err);
