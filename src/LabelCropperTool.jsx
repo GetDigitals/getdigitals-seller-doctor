@@ -99,7 +99,6 @@ export default function LabelCropperTool({ onBack }) {
   const [previewSize, setPreviewSize] = useState({ w: 0, h: 0 }); // rendered canvas px size
   const [box, setBox] = useState(PLATFORMS[0].defaultBox); // normalized 0..1 crop box
   const [pageClassification, setPageClassification] = useState([]); // [{pageIndex, isInvoice}]
-  const [keepOnlyLabels, setKeepOnlyLabels] = useState(true);
   const [status, setStatus] = useState("idle"); // idle | rendering | ready | cropping | done | error
   const [error, setError] = useState("");
   const [resultUrl, setResultUrl] = useState(null);
@@ -233,7 +232,7 @@ export default function LabelCropperTool({ onBack }) {
     try {
       const doc = await PDFDocument.load(pdfBytes);
       const pages = doc.getPages();
-      const isInvoiceAt = (idx) => keepOnlyLabels && pageClassification[idx]?.isInvoice;
+      const isInvoiceAt = (idx) => pageClassification[idx]?.isInvoice;
 
       pages.forEach((page, idx) => {
         if (isInvoiceAt(idx)) return; // leave invoice pages uncropped for now — dropped below
@@ -256,7 +255,7 @@ export default function LabelCropperTool({ onBack }) {
 
       const keptCount = doc.getPageCount();
       if (keptCount === 0) {
-        setError("Koi bhi page label jaisa detect nahi hua — 'Sirf label pages rakho' option untick karke try karo.");
+        setError("Is file mein koi bhi shipping label nahi mila — sirf invoice/tax pages hain. Apni seller panel se sahi 'Label' file (invoice nahi) download karke try karo.");
         setStatus("ready");
         return;
       }
@@ -334,10 +333,6 @@ export default function LabelCropperTool({ onBack }) {
             return invoiceCount > 0 ? (
               <div style={{ background: "#FFF7E6", border: "1px solid #F0C36D", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 12.5, color: "#7a5b12" }}>
                 📄 {labelCount} label page{labelCount === 1 ? "" : "s"} aur {invoiceCount} invoice/extra page{invoiceCount === 1 ? "" : "s"} detect hui — invoice pages final PDF mein nahi aayengi.
-                <label style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, cursor: "pointer" }}>
-                  <input type="checkbox" checked={keepOnlyLabels} onChange={(e) => setKeepOnlyLabels(e.target.checked)} />
-                  Sirf label pages rakho (invoice hata do)
-                </label>
               </div>
             ) : null;
           })()}
@@ -386,7 +381,7 @@ export default function LabelCropperTool({ onBack }) {
             >
               {status === "cropping" ? "Crop ho raha hai..." : (() => {
                 const invoiceCount = pageClassification.filter((c) => c.isInvoice).length;
-                const labelCount = keepOnlyLabels ? pageClassification.length - invoiceCount : pageCount;
+                const labelCount = pageClassification.length - invoiceCount;
                 return `✂️ Crop Karo — ${labelCount || pageCount} Label${labelCount === 1 ? "" : "s"}`;
               })()}
             </button>
