@@ -56,6 +56,7 @@ const INVOICE_MARKER_MIN_HITS = 2;
 const LABEL_MARKERS = [
   "awb", "ordered through", "hbd", "cpd", "destination code",
   "not for resale", "shipping/customer address",
+  "if undelivered, return to", "do not collect cash", "customer address",
 ].map((m) => m.replace(/[^a-z0-9]/g, ""));
 
 // On combined label+invoice pages, the "Tax Invoice" heading marks exactly
