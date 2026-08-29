@@ -125,6 +125,8 @@ function saveBox(platformId, box) {
 }
 
 const HANDLE_SIZE = 14;
+const EDGE_HANDLE_LENGTH = 28;
+const EDGE_HANDLE_THICKNESS = 10;
 
 export default function LabelCropperTool({ onBack }) {
   const [platform, setPlatform] = useState("meesho");
@@ -416,9 +418,37 @@ export default function LabelCropperTool({ onBack }) {
                     bottom: corner.includes("s") ? -HANDLE_SIZE / 2 : undefined,
                     left: corner.includes("w") ? -HANDLE_SIZE / 2 : undefined,
                     right: corner.includes("e") ? -HANDLE_SIZE / 2 : undefined,
+                    zIndex: 2,
                   }}
                 />
               ))}
+              {/* Edge-midpoint handles: drag ONLY width (e/w) or ONLY height
+                  (n/s) without the other dimension shifting at the same
+                  time — corner handles change both together, which makes it
+                  hard to just widen the box. No cap on how wide/tall it can
+                  go beyond the page edges. */}
+              {["n", "s", "e", "w"].map((edge) => {
+                const isVertical = edge === "n" || edge === "s";
+                return (
+                  <div
+                    key={edge}
+                    onPointerDown={(e) => onPointerDown(e, edge)}
+                    style={{
+                      position: "absolute",
+                      width: isVertical ? EDGE_HANDLE_LENGTH : EDGE_HANDLE_THICKNESS,
+                      height: isVertical ? EDGE_HANDLE_THICKNESS : EDGE_HANDLE_LENGTH,
+                      background: "#0F6E56", borderRadius: 3, opacity: 0.85,
+                      cursor: isVertical ? "ns-resize" : "ew-resize",
+                      top: edge === "n" ? -EDGE_HANDLE_THICKNESS / 2 : edge === "s" ? undefined : "50%",
+                      bottom: edge === "s" ? -EDGE_HANDLE_THICKNESS / 2 : undefined,
+                      left: edge === "w" ? -EDGE_HANDLE_THICKNESS / 2 : edge === "e" ? undefined : "50%",
+                      right: edge === "e" ? -EDGE_HANDLE_THICKNESS / 2 : undefined,
+                      transform: isVertical ? "translateX(-50%)" : "translateY(-50%)",
+                      zIndex: 2,
+                    }}
+                  />
+                );
+              })}
             </div>
           </div>
 
