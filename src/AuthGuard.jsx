@@ -131,16 +131,7 @@ export default function AuthGuard({ children }) {
           </button>
         </div>
       )}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 16px', borderBottom: '1px solid #e5e4df', fontFamily: 'system-ui, sans-serif' }}>
-        <span style={{ fontSize: 12, color: '#9a9a95', marginRight: 12, alignSelf: 'center' }}>{user.email}</span>
-        <button
-          onClick={() => supabase.auth.signOut()}
-          style={{ fontSize: 12, color: '#6b6b68', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-        >
-          Logout
-        </button>
-      </div>
-      {React.cloneElement(children, { hasAccess, onRequestPayment: () => setShowPayment(true) })}
+      {React.cloneElement(children, { hasAccess, onRequestPayment: () => setShowPayment(true), daysLeft, userEmail: user.email })}
 
       {showPayment && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, overflowY: 'auto' }}>

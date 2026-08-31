@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import LabelCropperTool from "./LabelCropperTool";
+import DashboardShell from "./DashboardShell";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
@@ -665,18 +666,6 @@ function ProfitDashboardApp({ onOpenListingTool, onOpenLabelCropper, hasAccess, 
         <button onClick={() => (hasAccess ? loadRows(DEMO_ORDERS) : onRequestPayment())} style={{ background: "transparent", color: "#6b6b68", border: "1px solid #e5e4df", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 20, opacity: hasAccess ? 1 : 0.75 }}>
           Demo data se try karo{lockIcon}
         </button>
-
-        <button onClick={() => (hasAccess ? onOpenListingTool() : onRequestPayment())} style={{ background: "#f4f3ef", color: "#1a1a1a", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 10, opacity: hasAccess ? 1 : 0.75 }}>
-          📋 Listing Draft Generator (beta) →{lockIcon}
-        </button>
-
-        <button onClick={() => (hasAccess ? onOpenLabelCropper() : onRequestPayment())} style={{ background: "#f4f3ef", color: "#1a1a1a", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 10, opacity: hasAccess ? 1 : 0.75 }}>
-          ✂️ Label Cropper — Meesho/Flipkart/Amazon →{lockIcon}
-        </button>
-
-        <a href="/toolkit/" target="_blank" rel="noreferrer" style={{ display: "block", textAlign: "center", background: "#EAF6F2", color: "#0F6E56", border: "1px solid #0F6E56", padding: "12px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", width: "100%", boxSizing: "border-box" }}>
-          🧮 Free Business Profit Toolkit (calculators) → Hamesha free
-        </a>
 
         {error && <p style={{ color: "#A32D2D", fontSize: 13, marginTop: 16 }}>{error}</p>}
         <p style={{ fontSize: 12, color: "#9a9a95", marginTop: 20, lineHeight: 1.6 }}>
@@ -1566,19 +1555,90 @@ function ListingDraftTool({ onBack }) {
   );
 }
 
-export default function SellerDoctorTool({ hasAccess = true, onRequestPayment = () => {} }) {
-  const [mode, setMode] = useState("main"); // main | listing | labelcrop
-  // mode only ever becomes "listing"/"labelcrop" via the onOpen* callbacks,
-  // which themselves check hasAccess first — so an unpaid user never
-  // actually reaches these screens. No extra guard needed here.
-  if (mode === "listing") return <ListingDraftTool onBack={() => setMode("main")} />;
-  if (mode === "labelcrop") return <LabelCropperTool onBack={() => setMode("main")} />;
+function BillingView({ hasAccess, daysLeft, onRequestPayment, userEmail }) {
   return (
+    <div style={{ padding: 28, fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 22 }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: "#0F6E56", textTransform: "uppercase", margin: "0 0 4px" }}>Current Plan</p>
+          <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600 }}>{hasAccess ? "Full Access — Active" : "Free Plan"}</h2>
+        </div>
+        <div style={{ fontSize: 12.5, color: "#6b6b68" }}>{userEmail}</div>
+      </div>
+
+      {hasAccess ? (
+        <div style={{ background: "#EAF6F2", border: "1px solid #0F6E56", borderRadius: 10, padding: "16px 18px", marginBottom: 20 }}>
+          <p style={{ margin: 0, fontSize: 13.5, color: "#0F6E56", fontWeight: 600 }}>
+            {daysLeft !== null ? `${daysLeft <= 0 ? "Aaj" : `${daysLeft} din mein`} expire ho raha hai` : "Plan active hai"}
+          </p>
+          <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "#3a5a51" }}>Settlement analysis, Label Cropper aur Listing Generator sab unlocked hain.</p>
+        </div>
+      ) : (
+        <div style={{ background: "#FFF4E5", border: "1px solid #F0C36D", borderRadius: 10, padding: "16px 18px", marginBottom: 20 }}>
+          <p style={{ margin: 0, fontSize: 13.5, color: "#8A5A00", fontWeight: 600 }}>Abhi sirf free calculators unlocked hain</p>
+          <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "#8A5A00" }}>Settlement diagnosis, Label Cropper aur Listing Generator ke liye plan activate karo.</p>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+        <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: 16 }}>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>₹299</div>
+          <div style={{ fontSize: 12.5, color: "#6b6b68" }}>7-Day Trial</div>
+        </div>
+        <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: 16 }}>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>₹999</div>
+          <div style={{ fontSize: 12.5, color: "#6b6b68" }}>Full Access (30 din, phir ₹299/month)</div>
+        </div>
+      </div>
+
+      <button onClick={onRequestPayment} style={{ background: "#0F6E56", color: "#fff", border: "none", padding: "12px 24px", borderRadius: 8, fontSize: 14.5, fontWeight: 500, cursor: "pointer", width: "100%" }}>
+        {hasAccess ? "Plan Renew / Manage Karein" : "Plan Activate Karein"}
+      </button>
+    </div>
+  );
+}
+
+function SettingsView({ userEmail }) {
+  return (
+    <div style={{ padding: 28, fontFamily: "system-ui, sans-serif" }}>
+      <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: "#0F6E56", textTransform: "uppercase", margin: "0 0 4px" }}>Account</p>
+      <h2 style={{ margin: "0 0 20px", fontSize: 19, fontWeight: 600 }}>Settings</h2>
+      <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: 16, marginBottom: 20 }}>
+        <div style={{ fontSize: 12, color: "#9a9a95", marginBottom: 4 }}>Logged in as</div>
+        <div style={{ fontSize: 14.5, fontWeight: 500 }}>{userEmail}</div>
+      </div>
+      <button onClick={() => supabase.auth.signOut()} style={{ background: "transparent", color: "#A32D2D", border: "1px solid #f0d0d0", padding: "10px 20px", borderRadius: 8, fontSize: 13.5, cursor: "pointer" }}>
+        Logout
+      </button>
+    </div>
+  );
+}
+
+export default function SellerDoctorTool({ hasAccess = true, onRequestPayment = () => {}, daysLeft = null, userEmail = "" }) {
+  const [view, setView] = useState("dashboard");
+  // Locked destinations still navigate — DashboardShell shows the real
+  // upload/tool screens for hasAccess users and each screen's own
+  // hasAccess-gated buttons (which already call onRequestPayment) for
+  // everyone else, exactly as before. Nothing here bypasses that check.
+  const planLabel = hasAccess ? "Full Access" : "Free Plan";
+
+  let content;
+  if (view === "listing") content = <ListingDraftTool onBack={() => setView("dashboard")} />;
+  else if (view === "labelcrop") content = <LabelCropperTool onBack={() => setView("dashboard")} />;
+  else if (view === "billing") content = <BillingView hasAccess={hasAccess} daysLeft={daysLeft} onRequestPayment={onRequestPayment} userEmail={userEmail} />;
+  else if (view === "settings") content = <SettingsView userEmail={userEmail} />;
+  else content = (
     <ProfitDashboardApp
-      onOpenListingTool={() => setMode("listing")}
-      onOpenLabelCropper={() => setMode("labelcrop")}
+      onOpenListingTool={() => setView("listing")}
+      onOpenLabelCropper={() => setView("labelcrop")}
       hasAccess={hasAccess}
       onRequestPayment={onRequestPayment}
     />
+  );
+
+  return (
+    <DashboardShell activeView={view} onNavigate={setView} hasAccess={hasAccess} planLabel={planLabel} userEmail={userEmail} onLogout={() => supabase.auth.signOut()}>
+      {content}
+    </DashboardShell>
   );
 }
