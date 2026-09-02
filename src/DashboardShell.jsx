@@ -20,7 +20,7 @@ const NAV_GROUPS = [
     label: "Overview",
     items: [
       { id: "dashboard", label: "Dashboard", icon: "📊" },
-      { id: "analytics", label: "Analytics", icon: "📈", paid: true, comingSoon: true },
+      { id: "analytics", label: "Analytics", icon: "📈", paid: true },
     ],
   },
   {
@@ -34,16 +34,16 @@ const NAV_GROUPS = [
   {
     label: "Diagnosis",
     items: [
-      { id: "reports", label: "Settlement Reports", icon: "🧾", paid: true, comingSoon: true },
-      { id: "skus", label: "Products & SKUs", icon: "📦", paid: true, comingSoon: true },
-      { id: "loss", label: "Loss Detection", icon: "🔍", paid: true, comingSoon: true },
+      { id: "reports", label: "Settlement Reports", icon: "🧾", paid: true },
+      { id: "skus", label: "Products & SKUs", icon: "📦", paid: true },
+      { id: "loss", label: "Loss Detection", icon: "🔍", paid: true },
     ],
   },
   {
     label: "Account",
     items: [
       { id: "billing", label: "Billing & Plan", icon: "💳" },
-      { id: "logs", label: "Activity Log", icon: "🗂️", paid: true, comingSoon: true },
+      { id: "logs", label: "Activity Log", icon: "🗂️", paid: true },
     ],
   },
 ];

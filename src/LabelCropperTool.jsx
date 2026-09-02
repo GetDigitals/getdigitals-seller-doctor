@@ -26,8 +26,21 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { PDFDocument } from "pdf-lib";
+import { supabase } from "./supabaseClient";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
+// Fire-and-forget activity logging — same pattern as SellerDoctorTool's
+// logActivity, kept local here so this file doesn't need a shared import.
+async function logActivity(actionType, details = {}) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("activity_log").insert({ user_id: user.id, action_type: actionType, details });
+  } catch (err) {
+    console.error("Activity log failed:", err);
+  }
+}
 
 const PLATFORMS = [
   { id: "meesho", label: "Meesho", icon: "🟣", defaultBox: { x: 0.04, y: 0.03, w: 0.92, h: 0.46 } },
@@ -323,6 +336,7 @@ export default function LabelCropperTool({ onBack }) {
       setResultName(`${base}-${platform}-labels-only.pdf`);
       setResultCount(keptCount);
       saveBox(platform, box);
+      logActivity("label_crop", { platform, labelCount: keptCount });
       setStatus("done");
     } catch (err) {
       console.error(err);

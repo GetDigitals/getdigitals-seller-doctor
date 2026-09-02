@@ -12,6 +12,16 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 
+async function logActivity(actionType, details = {}) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from('activity_log').insert({ user_id: user.id, action_type: actionType, details });
+  } catch (err) {
+    console.error('Activity log failed:', err);
+  }
+}
+
 export default function PaymentScreen({ user, onPaymentDone }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -62,6 +72,7 @@ export default function PaymentScreen({ user, onPaymentDone }) {
           // The webhook activates the subscription in the database — this
           // just polls once after a short delay so the UI updates without
           // needing a manual page refresh.
+          logActivity('payment', { plan });
           setTimeout(() => onPaymentDone(), 3000);
         },
         prefill: { email: user.email },

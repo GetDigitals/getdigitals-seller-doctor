@@ -304,6 +304,8 @@ Only include SKUs/points that genuinely need attention. If everything is healthy
 
 // PHASE 1 — Daily Briefing: har successful analysis ke baad ek snapshot
 // save karta hai, isi se "pichle hafte vs is hafte" comparison possible hota hai.
+// PHASE 2 — har SKU ka row bhi sku_snapshots mein save karta hai, taaki
+// "Products & SKUs" page har SKU ka time-ke-saath trend dikha sake.
 async function saveSnapshot(rows, recommendations) {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -331,13 +333,106 @@ async function saveSnapshot(rows, recommendations) {
       sku_count: rows.length,
       top_issues: topIssues,
     });
+
+    const skuRows = rows.map((row) => {
+      const m = computeMetrics(row);
+      return {
+        user_id: user.id,
+        sku: row.sku,
+        name: row.name,
+        platform: row.platform,
+        sales: Math.round(row.sales || 0),
+        units: row.units || 0,
+        returns: row.returns || 0,
+        profit: Math.round(m.profit),
+        margin_percent: Math.round(m.margin * 1000) / 10,
+      };
+    });
+    if (skuRows.length) await supabase.from("sku_snapshots").insert(skuRows);
   } catch (err) {
     // Snapshot fail hone se poora analysis fail nahi hona chahiye.
     console.error("Snapshot save failed:", err);
   }
 }
 
-// PHASE 1 — Daily Briefing: pichle 2 snapshots fetch karke AI se ek
+// PHASE 2 — Activity Log: koi bhi meaningful action (upload, PDF download,
+// label crop, listing draft, payment) yahan record hota hai. Fire-and-forget
+// pattern — kabhi bhi actual action ko block/fail nahi karta.
+async function logActivity(actionType, details = {}) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("activity_log").insert({ user_id: user.id, action_type: actionType, details });
+  } catch (err) {
+    console.error("Activity log failed:", err);
+  }
+}
+
+// PHASE 2 — Products & SKUs page: raw sku_snapshots rows fetch karke,
+// per-SKU group karta hai (latest values + kitni baar dekha gaya).
+async function getSkuHistory() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("sku_snapshots")
+    .select("sku, name, platform, sales, units, returns, profit, margin_percent, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1000);
+
+  if (error) { console.error("SKU history fetch failed:", error); return []; }
+
+  const bySku = new Map();
+  (data || []).forEach((row) => {
+    if (!bySku.has(row.sku)) {
+      bySku.set(row.sku, { sku: row.sku, name: row.name, platform: row.platform, timesAnalyzed: 0, history: [] });
+    }
+    const entry = bySku.get(row.sku);
+    entry.timesAnalyzed += 1;
+    entry.history.push(row); // already newest-first from the query order
+  });
+
+  return Array.from(bySku.values()).map((entry) => ({
+    ...entry,
+    latest: entry.history[0],
+    first: entry.history[entry.history.length - 1],
+  }));
+}
+
+// PHASE 2 — Activity Log page: recent actions fetch karta hai.
+async function getActivityLog() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("activity_log")
+    .select("action_type, details, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) { console.error("Activity log fetch failed:", error); return []; }
+  return data || [];
+}
+
+// PHASE 2 — Settlement Reports page: poora snapshot history (sab fields
+// ke saath) fetch karta hai — existing getSnapshotHistory sirf chart ke
+// liye 3 fields leta hai, isko poori report list ke liye chahiye.
+async function getFullSnapshotHistory() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("snapshots")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) { console.error("Full snapshot history fetch failed:", error); return []; }
+  return data || [];
+}
 // chhota, plain-language "aaj ki briefing" banata hai.
 async function getBriefing() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -531,7 +626,7 @@ function generatePdfReport(rows, recommendations, totals, businessName) {
   doc.save(`seller-doctor-report-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
-function ProfitDashboardApp({ onOpenListingTool, onOpenLabelCropper, hasAccess, onRequestPayment }) {
+function ProfitDashboardApp({ onOpenListingTool, onOpenLabelCropper, hasAccess, onRequestPayment, onRowsChange }) {
   const [rows, setRows] = useState(null);
   const [meesho, setMeesho] = useState(null); // { totals, statusCounts, totalOrders }
   const [flipkart, setFlipkart] = useState(null); // { totalOrders, statusCounts, slaBreaches, riskySkus }
@@ -552,10 +647,17 @@ function ProfitDashboardApp({ onOpenListingTool, onOpenLabelCropper, hasAccess, 
     if (hasAccess) getSnapshotHistory().then(setTrendHistory);
   }, [hasAccess]);
 
-  const loadRows = async (newRows, meeshoMeta = null) => {
+  // Current session ki rows parent ko bhi bhejo — "Loss Detection" view
+  // isi upload ke against loss-making SKUs dikhata hai.
+  useEffect(() => {
+    onRowsChange?.(rows);
+  }, [rows]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadRows = async (newRows, meeshoMeta = null, source = "csv") => {
     setRows(newRows);
     setMeesho(meeshoMeta);
     setAiStatus("loading");
+    logActivity("settlement_upload", { source, skuCount: newRows.length });
     try {
       const meta = meeshoMeta
         ? { totalOrders: meeshoMeta.totalOrders, statusCounts: meeshoMeta.statusCounts, netSettlement: Math.round(meeshoMeta.totals.finalSettlement) }
@@ -591,7 +693,7 @@ function ProfitDashboardApp({ onOpenListingTool, onOpenLabelCropper, hasAccess, 
       header: true, skipEmptyLines: true,
       complete: (result) => {
         if (!result.data.length) { setError("File khali lag raha hai ya format samajh nahi aaya."); return; }
-        loadRows(mapRowsFromGenericCsv(result.data));
+        loadRows(mapRowsFromGenericCsv(result.data), null, "csv");
       },
       error: () => setError("File parse nahi ho payi. CSV format check karo."),
     });
@@ -601,7 +703,7 @@ function ProfitDashboardApp({ onOpenListingTool, onOpenLabelCropper, hasAccess, 
     setError("");
     try {
       const { skuRows, totals, statusCounts, totalOrders } = await parseMeeshoSettlement(file);
-      loadRows(skuRows, { totals, statusCounts, totalOrders });
+      loadRows(skuRows, { totals, statusCounts, totalOrders }, "meesho");
     } catch (err) {
       setError(err.message || "Meesho file parse nahi ho payi.");
     }
@@ -612,6 +714,7 @@ function ProfitDashboardApp({ onOpenListingTool, onOpenLabelCropper, hasAccess, 
     try {
       const parsed = await readFlipkartOrdersFile(file);
       setFlipkart(parsed);
+      logActivity("settlement_upload", { source: "flipkart", totalOrders: parsed.totalOrders });
     } catch (err) {
       setError(err.message || "Flipkart file parse nahi ho payi.");
     }
@@ -663,7 +766,7 @@ function ProfitDashboardApp({ onOpenListingTool, onOpenLabelCropper, hasAccess, 
           Generic CSV upload karo{lockIcon}
         </button>
 
-        <button onClick={() => (hasAccess ? loadRows(DEMO_ORDERS) : onRequestPayment())} style={{ background: "transparent", color: "#6b6b68", border: "1px solid #e5e4df", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 20, opacity: hasAccess ? 1 : 0.75 }}>
+        <button onClick={() => (hasAccess ? loadRows(DEMO_ORDERS, null, "demo") : onRequestPayment())} style={{ background: "transparent", color: "#6b6b68", border: "1px solid #e5e4df", padding: "12px 24px", borderRadius: 8, fontSize: 15, fontWeight: 500, cursor: "pointer", width: "100%", marginBottom: 20, opacity: hasAccess ? 1 : 0.75 }}>
           Demo data se try karo{lockIcon}
         </button>
 
@@ -746,7 +849,7 @@ function ProfitDashboardApp({ onOpenListingTool, onOpenLabelCropper, hasAccess, 
       {rows && hasAccess && (
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
         <button
-          onClick={() => generatePdfReport(rows, recommendations, totals)}
+          onClick={() => { generatePdfReport(rows, recommendations, totals); logActivity("pdf_download", { skuCount: rows.length }); }}
           style={{ fontSize: 12.5, background: "#fff", color: "#3C3489", border: "1px solid #3C3489", borderRadius: 20, padding: "7px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
         >
           📄 Download PDF Report
@@ -1306,6 +1409,7 @@ function ListingDraftTool({ onBack }) {
 
       setRows(finalRows);
       setStatus("done");
+      logActivity("listing_draft", { template, rowCount: finalRows.length });
     } catch (err) {
       setError(err.message || "AI draft generate nahi ho paya — dobara try karo.");
       setStatus("failed");
@@ -1555,6 +1659,293 @@ function ListingDraftTool({ onBack }) {
   );
 }
 
+// ===== PHASE 2 real views =====
+
+function currencyShort(n) {
+  const v = Math.round(n || 0);
+  return (v < 0 ? "-₹" : "₹") + Math.abs(v).toLocaleString("en-IN");
+}
+
+function AnalyticsView({ hasAccess, onRequestPayment }) {
+  const [history, setHistory] = useState(null); // null = loading
+  useEffect(() => {
+    if (hasAccess) getSnapshotHistory().then(setHistory);
+  }, [hasAccess]);
+
+  if (!hasAccess) {
+    return <LockedPanel title="Analytics" onRequestPayment={onRequestPayment} />;
+  }
+  if (history === null) {
+    return <div style={{ padding: 40, textAlign: "center", color: "#9a9a95", fontFamily: "system-ui, sans-serif" }}>Load ho raha hai...</div>;
+  }
+
+  const totalAnalyses = history.length;
+  const totalProfit = history.reduce((s, h) => s + (h.total_profit || 0), 0);
+  const totalLoss = history.reduce((s, h) => s + (h.total_loss || 0), 0);
+  const latest = history[history.length - 1];
+
+  return (
+    <div style={{ padding: 28, fontFamily: "system-ui, sans-serif" }}>
+      <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: "#0F6E56", textTransform: "uppercase", margin: "0 0 4px" }}>Analytics</p>
+      <h2 style={{ margin: "0 0 20px", fontSize: 19, fontWeight: 600 }}>Profit trend, sabhi analyses ke saath</h2>
+
+      {totalAnalyses === 0 ? (
+        <p style={{ fontSize: 13.5, color: "#6b6b68" }}>Abhi tak koi settlement analyze nahi hua. Dashboard se ek file upload karo, yahan trend dikhna shuru ho jayega.</p>
+      ) : (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
+            <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: 16 }}>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>{totalAnalyses}</div>
+              <div style={{ fontSize: 12, color: "#6b6b68" }}>Total Analyses</div>
+            </div>
+            <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: 16 }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#1F6B4A" }}>{currencyShort(totalProfit)}</div>
+              <div style={{ fontSize: 12, color: "#6b6b68" }}>Total Profit Tracked</div>
+            </div>
+            <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: 16 }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#D64545" }}>{currencyShort(totalLoss)}</div>
+              <div style={{ fontSize: 12, color: "#6b6b68" }}>Total Loss Tracked</div>
+            </div>
+          </div>
+
+          <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: 18, marginBottom: 20 }}>
+            <h3 style={{ fontSize: 14, margin: "0 0 12px" }}>Profit Trend (har analysis)</h3>
+            <TrendChart history={history} />
+          </div>
+
+          {latest && (
+            <p style={{ fontSize: 12.5, color: "#6b6b68" }}>
+              Latest analysis: {new Date(latest.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} — {currencyShort(latest.total_profit)} profit, {currencyShort(latest.total_loss)} loss.
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function SettlementReportsView({ hasAccess, onRequestPayment }) {
+  const [reports, setReports] = useState(null);
+  useEffect(() => {
+    if (hasAccess) getFullSnapshotHistory().then(setReports);
+  }, [hasAccess]);
+
+  if (!hasAccess) return <LockedPanel title="Settlement Reports" onRequestPayment={onRequestPayment} />;
+  if (reports === null) return <div style={{ padding: 40, textAlign: "center", color: "#9a9a95", fontFamily: "system-ui, sans-serif" }}>Load ho raha hai...</div>;
+
+  return (
+    <div style={{ padding: 28, fontFamily: "system-ui, sans-serif" }}>
+      <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: "#0F6E56", textTransform: "uppercase", margin: "0 0 4px" }}>Settlement Reports</p>
+      <h2 style={{ margin: "0 0 20px", fontSize: 19, fontWeight: 600 }}>Har analysis ka history</h2>
+
+      {reports.length === 0 ? (
+        <p style={{ fontSize: 13.5, color: "#6b6b68" }}>Abhi tak koi report save nahi hua. Dashboard se ek settlement file upload karke analyze karo.</p>
+      ) : (
+        <div>
+          {reports.map((r) => (
+            <div key={r.id} style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: "14px 16px", marginBottom: 10, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 600 }}>
+                  {new Date(r.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                </div>
+                <div style={{ fontSize: 12, color: "#6b6b68", marginTop: 2 }}>{r.sku_count} SKUs · {r.critical_count} critical, {r.warning_count} warning</div>
+                {r.top_issues?.length > 0 && (
+                  <div style={{ fontSize: 11.5, color: "#8A5A00", marginTop: 4 }}>Top issue: {r.top_issues[0].title}</div>
+                )}
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>{currencyShort(r.total_sales)} <span style={{ fontWeight: 400, color: "#6b6b68", fontSize: 11.5 }}>sales</span></div>
+                <div style={{ fontSize: 12.5, color: "#1F6B4A" }}>+{currencyShort(r.total_profit)}</div>
+                {r.total_loss > 0 && <div style={{ fontSize: 12.5, color: "#D64545" }}>-{currencyShort(r.total_loss)}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductsSkusView({ hasAccess, onRequestPayment }) {
+  const [skus, setSkus] = useState(null);
+  const [sortBy, setSortBy] = useState("recent");
+  useEffect(() => {
+    if (hasAccess) getSkuHistory().then(setSkus);
+  }, [hasAccess]);
+
+  if (!hasAccess) return <LockedPanel title="Products & SKUs" onRequestPayment={onRequestPayment} />;
+  if (skus === null) return <div style={{ padding: 40, textAlign: "center", color: "#9a9a95", fontFamily: "system-ui, sans-serif" }}>Load ho raha hai...</div>;
+
+  const sorted = [...skus].sort((a, b) => {
+    if (sortBy === "profit") return (b.latest?.profit || 0) - (a.latest?.profit || 0);
+    if (sortBy === "loss") return (a.latest?.profit || 0) - (b.latest?.profit || 0);
+    return new Date(b.latest?.created_at || 0) - new Date(a.latest?.created_at || 0);
+  });
+
+  return (
+    <div style={{ padding: 28, fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: "#0F6E56", textTransform: "uppercase", margin: "0 0 4px" }}>Products & SKUs</p>
+          <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600 }}>Har SKU ka time-ke-saath trend</h2>
+        </div>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e4df", fontSize: 13 }}>
+          <option value="recent">Recently analyzed</option>
+          <option value="profit">Most profitable</option>
+          <option value="loss">Most loss</option>
+        </select>
+      </div>
+
+      {sorted.length === 0 ? (
+        <p style={{ fontSize: 13.5, color: "#6b6b68" }}>Abhi tak koi SKU track nahi hua. Dashboard se ek settlement file upload karke analyze karo — har baar analyze karne par SKUs yahan add hote jayenge.</p>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ textAlign: "left", borderBottom: "1px solid #e5e4df" }}>
+              <th style={{ padding: "8px 4px" }}>SKU</th>
+              <th style={{ padding: "8px 4px" }}>Platform</th>
+              <th style={{ padding: "8px 4px" }}>Baar analyze hua</th>
+              <th style={{ padding: "8px 4px", textAlign: "right" }}>Latest Profit</th>
+              <th style={{ padding: "8px 4px", textAlign: "right" }}>Margin</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((s) => (
+              <tr key={s.sku} style={{ borderBottom: "1px solid #f0efec" }}>
+                <td style={{ padding: "8px 4px", fontWeight: 500 }}>{s.sku}{s.name ? <div style={{ fontSize: 11, color: "#9a9a95", fontWeight: 400 }}>{s.name}</div> : null}</td>
+                <td style={{ padding: "8px 4px", color: "#6b6b68" }}>{s.platform || "—"}</td>
+                <td style={{ padding: "8px 4px", color: "#6b6b68" }}>{s.timesAnalyzed}×</td>
+                <td style={{ padding: "8px 4px", textAlign: "right", color: (s.latest?.profit || 0) >= 0 ? "#1F6B4A" : "#D64545", fontWeight: 600 }}>{currencyShort(s.latest?.profit)}</td>
+                <td style={{ padding: "8px 4px", textAlign: "right", color: "#6b6b68" }}>{s.latest?.margin_percent}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+function LossDetectionView({ rows, hasAccess, onRequestPayment }) {
+  if (!hasAccess) return <LockedPanel title="Loss Detection" onRequestPayment={onRequestPayment} />;
+
+  if (!rows || rows.length === 0) {
+    return (
+      <div style={{ padding: 28, fontFamily: "system-ui, sans-serif" }}>
+        <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: "#0F6E56", textTransform: "uppercase", margin: "0 0 4px" }}>Loss Detection</p>
+        <h2 style={{ margin: "0 0 12px", fontSize: 19, fontWeight: 600 }}>Loss-making SKUs</h2>
+        <p style={{ fontSize: 13.5, color: "#6b6b68" }}>Pehle Dashboard se ek settlement file upload karo — us upload ke andar jo bhi SKUs loss mein hain, wo yahan dikhengi.</p>
+      </div>
+    );
+  }
+
+  const withLoss = rows
+    .map((r) => ({ row: r, m: computeMetrics(r) }))
+    .filter((x) => x.m.profit < 0)
+    .sort((a, b) => a.m.profit - b.m.profit);
+
+  const totalLoss = withLoss.reduce((s, x) => s + Math.abs(x.m.profit), 0);
+
+  return (
+    <div style={{ padding: 28, fontFamily: "system-ui, sans-serif" }}>
+      <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: "#0F6E56", textTransform: "uppercase", margin: "0 0 4px" }}>Loss Detection</p>
+      <h2 style={{ margin: "0 0 4px", fontSize: 19, fontWeight: 600 }}>Current upload ki loss-making SKUs</h2>
+      <p style={{ fontSize: 12.5, color: "#6b6b68", margin: "0 0 18px" }}>{withLoss.length} SKUs loss mein — total {currencyShort(totalLoss)}</p>
+
+      {withLoss.length === 0 ? (
+        <div style={{ background: "#EAF6F2", border: "1px solid #0F6E56", borderRadius: 10, padding: 16, fontSize: 13.5, color: "#0F6E56" }}>
+          🎉 Is upload mein koi bhi SKU loss mein nahi hai.
+        </div>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ textAlign: "left", borderBottom: "1px solid #e5e4df" }}>
+              <th style={{ padding: "8px 4px" }}>SKU</th>
+              <th style={{ padding: "8px 4px", textAlign: "right" }}>Sales</th>
+              <th style={{ padding: "8px 4px", textAlign: "right" }}>Return %</th>
+              <th style={{ padding: "8px 4px", textAlign: "right" }}>Loss</th>
+            </tr>
+          </thead>
+          <tbody>
+            {withLoss.map(({ row, m }) => (
+              <tr key={row.sku} style={{ borderBottom: "1px solid #f0efec" }}>
+                <td style={{ padding: "8px 4px", fontWeight: 500 }}>{row.sku}{row.name ? <div style={{ fontSize: 11, color: "#9a9a95", fontWeight: 400 }}>{row.name}</div> : null}</td>
+                <td style={{ padding: "8px 4px", textAlign: "right" }}>{currencyShort(row.sales)}</td>
+                <td style={{ padding: "8px 4px", textAlign: "right", color: m.returnRate > 0.3 ? "#D64545" : "#6b6b68" }}>{(m.returnRate * 100).toFixed(0)}%</td>
+                <td style={{ padding: "8px 4px", textAlign: "right", color: "#D64545", fontWeight: 700 }}>-{currencyShort(Math.abs(m.profit))}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+const ACTIVITY_LABELS = {
+  settlement_upload: { icon: "📤", label: "Settlement Upload" },
+  pdf_download: { icon: "📄", label: "PDF Report Download" },
+  label_crop: { icon: "✂️", label: "Label Crop" },
+  listing_draft: { icon: "📋", label: "Listing Draft Generate" },
+  payment: { icon: "💳", label: "Payment" },
+};
+
+function ActivityLogView({ hasAccess, onRequestPayment }) {
+  const [log, setLog] = useState(null);
+  useEffect(() => {
+    if (hasAccess) getActivityLog().then(setLog);
+  }, [hasAccess]);
+
+  if (!hasAccess) return <LockedPanel title="Activity Log" onRequestPayment={onRequestPayment} />;
+  if (log === null) return <div style={{ padding: 40, textAlign: "center", color: "#9a9a95", fontFamily: "system-ui, sans-serif" }}>Load ho raha hai...</div>;
+
+  return (
+    <div style={{ padding: 28, fontFamily: "system-ui, sans-serif" }}>
+      <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", color: "#0F6E56", textTransform: "uppercase", margin: "0 0 4px" }}>Activity Log</p>
+      <h2 style={{ margin: "0 0 20px", fontSize: 19, fontWeight: 600 }}>Recent actions</h2>
+
+      {log.length === 0 ? (
+        <p style={{ fontSize: 13.5, color: "#6b6b68" }}>Abhi tak koi activity record nahi hui. Upload, download, crop ya draft generate karte hi yahan dikhega.</p>
+      ) : (
+        <div>
+          {log.map((entry, i) => {
+            const meta = ACTIVITY_LABELS[entry.action_type] || { icon: "•", label: entry.action_type };
+            return (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid #f0efec" }}>
+                <div style={{ fontSize: 18 }}>{meta.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 500 }}>{meta.label}</div>
+                  {entry.details && Object.keys(entry.details).length > 0 && (
+                    <div style={{ fontSize: 11.5, color: "#9a9a95" }}>
+                      {Object.entries(entry.details).map(([k, v]) => `${k}: ${v}`).join(" · ")}
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: 11.5, color: "#9a9a95", whiteSpace: "nowrap" }}>
+                  {new Date(entry.created_at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LockedPanel({ title, onRequestPayment }) {
+  return (
+    <div style={{ padding: "60px 24px", textAlign: "center", fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ fontSize: 30, marginBottom: 10 }}>🔒</div>
+      <h3 style={{ margin: "0 0 8px", fontSize: 16 }}>{title} — plan ke saath unlock hota hai</h3>
+      <p style={{ margin: "0 0 18px", fontSize: 13, color: "#6b6b68" }}>Settlement analysis, Label Cropper aur Listing Generator ke saath ye bhi unlock ho jayega.</p>
+      <button onClick={onRequestPayment} style={{ background: "#0F6E56", color: "#fff", border: "none", padding: "10px 22px", borderRadius: 8, fontSize: 13.5, fontWeight: 500, cursor: "pointer" }}>
+        Plan Activate Karein
+      </button>
+    </div>
+  );
+}
+
 function BillingView({ hasAccess, daysLeft, onRequestPayment, userEmail }) {
   return (
     <div style={{ padding: 28, fontFamily: "system-ui, sans-serif" }}>
@@ -1616,29 +2007,43 @@ function SettingsView({ userEmail }) {
 
 export default function SellerDoctorTool({ hasAccess = true, onRequestPayment = () => {}, daysLeft = null, userEmail = "" }) {
   const [view, setView] = useState("dashboard");
+  const [sharedRows, setSharedRows] = useState(null);
   // Locked destinations still navigate — DashboardShell shows the real
   // upload/tool screens for hasAccess users and each screen's own
   // hasAccess-gated buttons (which already call onRequestPayment) for
   // everyone else, exactly as before. Nothing here bypasses that check.
   const planLabel = hasAccess ? "Full Access" : "Free Plan";
 
-  let content;
-  if (view === "listing") content = <ListingDraftTool onBack={() => setView("dashboard")} />;
-  else if (view === "labelcrop") content = <LabelCropperTool onBack={() => setView("dashboard")} />;
-  else if (view === "billing") content = <BillingView hasAccess={hasAccess} daysLeft={daysLeft} onRequestPayment={onRequestPayment} userEmail={userEmail} />;
-  else if (view === "settings") content = <SettingsView userEmail={userEmail} />;
-  else content = (
-    <ProfitDashboardApp
-      onOpenListingTool={() => setView("listing")}
-      onOpenLabelCropper={() => setView("labelcrop")}
-      hasAccess={hasAccess}
-      onRequestPayment={onRequestPayment}
-    />
+  // ProfitDashboardApp stays mounted at all times (just hidden when another
+  // view is active) so its uploaded rows aren't lost when the seller checks
+  // Loss Detection — unmounting/remounting on every nav would reset it.
+  const dashboardContent = (
+    <div style={{ display: view === "dashboard" ? "block" : "none" }}>
+      <ProfitDashboardApp
+        onOpenListingTool={() => setView("listing")}
+        onOpenLabelCropper={() => setView("labelcrop")}
+        hasAccess={hasAccess}
+        onRequestPayment={onRequestPayment}
+        onRowsChange={setSharedRows}
+      />
+    </div>
   );
+
+  let overlay = null;
+  if (view === "listing") overlay = <ListingDraftTool onBack={() => setView("dashboard")} />;
+  else if (view === "labelcrop") overlay = <LabelCropperTool onBack={() => setView("dashboard")} />;
+  else if (view === "billing") overlay = <BillingView hasAccess={hasAccess} daysLeft={daysLeft} onRequestPayment={onRequestPayment} userEmail={userEmail} />;
+  else if (view === "settings") overlay = <SettingsView userEmail={userEmail} />;
+  else if (view === "analytics") overlay = <AnalyticsView hasAccess={hasAccess} onRequestPayment={onRequestPayment} />;
+  else if (view === "reports") overlay = <SettlementReportsView hasAccess={hasAccess} onRequestPayment={onRequestPayment} />;
+  else if (view === "skus") overlay = <ProductsSkusView hasAccess={hasAccess} onRequestPayment={onRequestPayment} />;
+  else if (view === "loss") overlay = <LossDetectionView rows={sharedRows} hasAccess={hasAccess} onRequestPayment={onRequestPayment} />;
+  else if (view === "logs") overlay = <ActivityLogView hasAccess={hasAccess} onRequestPayment={onRequestPayment} />;
 
   return (
     <DashboardShell activeView={view} onNavigate={setView} hasAccess={hasAccess} planLabel={planLabel} userEmail={userEmail} onLogout={() => supabase.auth.signOut()}>
-      {content}
+      {dashboardContent}
+      {overlay}
     </DashboardShell>
   );
 }
