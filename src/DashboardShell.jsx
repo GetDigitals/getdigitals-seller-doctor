@@ -27,6 +27,7 @@ const NAV_GROUPS = [
     label: "Tools",
     items: [
       { id: "calc", label: "Calculators", icon: "🧮", free: true, external: "/toolkit/" },
+      { id: "photoshoot", label: "Product Photoshoot", icon: "📸", free: true },
       { id: "labelcrop", label: "Label Cropper", icon: "✂️", paid: true },
       { id: "listing", label: "Listing Generator", icon: "📋", paid: true, badge: "Beta" },
     ],

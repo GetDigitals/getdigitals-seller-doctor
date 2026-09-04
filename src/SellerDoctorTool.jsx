@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import LabelCropperTool from "./LabelCropperTool";
+import ProductPhotoshootTool from "./ProductPhotoshootTool";
 import DashboardShell from "./DashboardShell";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
@@ -1989,6 +1990,96 @@ function BillingView({ hasAccess, daysLeft, onRequestPayment, userEmail }) {
   );
 }
 
+function GeminiKeySetup() {
+  const [key, setKey] = useState(""); // input field value
+  const [savedKey, setSavedKey] = useState(null); // null = loading
+  const [status, setStatus] = useState("idle"); // idle | saving | saved | error
+  const [showGuide, setShowGuide] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("user_api_keys").select("gemini_api_key").eq("user_id", user.id).maybeSingle();
+      setSavedKey(data?.gemini_api_key || "");
+    })();
+  }, []);
+
+  const handleSave = async () => {
+    if (!key.trim()) return;
+    setStatus("saving");
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from("user_api_keys").upsert({ user_id: user.id, gemini_api_key: key.trim(), updated_at: new Date().toISOString() });
+      setSavedKey(key.trim());
+      setKey("");
+      setStatus("saved");
+    } catch (err) {
+      setStatus("error");
+    }
+  };
+
+  const handleRemove = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.from("user_api_keys").delete().eq("user_id", user.id);
+    setSavedKey("");
+  };
+
+  const maskedKey = (k) => (k ? `${k.slice(0, 6)}${"•".repeat(Math.max(0, k.length - 10))}${k.slice(-4)}` : "");
+
+  return (
+    <div style={{ border: "1px solid #e5e4df", borderRadius: 10, padding: 18, marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <h3 style={{ margin: 0, fontSize: 14.5 }}>🔑 Product Photoshoot — API Key</h3>
+        {savedKey ? (
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#0F6E56", background: "#EAF6F2", padding: "3px 10px", borderRadius: 999 }}>✅ Connected</span>
+        ) : (
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#8A5A00", background: "#FFF4E5", padding: "3px 10px", borderRadius: 999 }}>Connected nahi hai</span>
+        )}
+      </div>
+      <p style={{ fontSize: 12.5, color: "#6b6b68", margin: "0 0 12px" }}>
+        Product Photoshoot tool tumhari apni free Google Gemini API key use karta hai — GetDigitals iska koi charge nahi leta.
+      </p>
+
+      {savedKey && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, fontSize: 12.5 }}>
+          <code style={{ background: "#f7f6f2", padding: "4px 8px", borderRadius: 6, color: "#6b6b68" }}>{maskedKey(savedKey)}</code>
+          <button onClick={handleRemove} style={{ background: "none", border: "none", color: "#A32D2D", fontSize: 12, cursor: "pointer", textDecoration: "underline" }}>Hatao</button>
+        </div>
+      )}
+
+      <button onClick={() => setShowGuide((s) => !s)} style={{ background: "none", border: "none", color: "#0F6E56", fontSize: 12.5, fontWeight: 600, cursor: "pointer", padding: 0, marginBottom: 12 }}>
+        {showGuide ? "▲ Guide chhupao" : "▼ Free API key kaise banayein? (2 minute)"}
+      </button>
+
+      {showGuide && (
+        <ol style={{ fontSize: 12.5, color: "#4a4a48", lineHeight: 1.9, paddingLeft: 20, marginBottom: 14 }}>
+          <li><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" style={{ color: "#0F6E56", fontWeight: 600 }}>aistudio.google.com/app/apikey</a> par jao (naya tab khulega)</li>
+          <li>Apni Google account se sign in karo (koi bhi Gmail chalega, bilkul free hai)</li>
+          <li>"Create API key" button dabao</li>
+          <li>Project select karo (agar pucha jaye to default/naya project choose kar lo)</li>
+          <li>Jo key milegi (kuch aisi dikhegi: <code style={{ background: "#f7f6f2", padding: "2px 6px", borderRadius: 4 }}>AIzaSy...</code>) usse copy karo</li>
+          <li>Neeche wale box mein paste karke "Save" dabao</li>
+        </ol>
+      )}
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <input
+          type="password"
+          placeholder="AIzaSy... apni Gemini API key yahan paste karo"
+          value={key}
+          onChange={(e) => setKey(e.target.value)}
+          style={{ flex: 1, padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e4df", fontSize: 13 }}
+        />
+        <button onClick={handleSave} disabled={!key.trim() || status === "saving"} style={{ background: "#0F6E56", color: "#fff", border: "none", padding: "10px 18px", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", opacity: !key.trim() ? 0.6 : 1 }}>
+          {status === "saving" ? "Save ho raha hai..." : "Save"}
+        </button>
+      </div>
+      {status === "error" && <p style={{ color: "#A32D2D", fontSize: 12, marginTop: 8 }}>Save nahi ho paya — dobara try karo.</p>}
+    </div>
+  );
+}
+
 function SettingsView({ userEmail }) {
   return (
     <div style={{ padding: 28, fontFamily: "system-ui, sans-serif" }}>
@@ -1998,6 +2089,9 @@ function SettingsView({ userEmail }) {
         <div style={{ fontSize: 12, color: "#9a9a95", marginBottom: 4 }}>Logged in as</div>
         <div style={{ fontSize: 14.5, fontWeight: 500 }}>{userEmail}</div>
       </div>
+
+      <GeminiKeySetup />
+
       <button onClick={() => supabase.auth.signOut()} style={{ background: "transparent", color: "#A32D2D", border: "1px solid #f0d0d0", padding: "10px 20px", borderRadius: 8, fontSize: 13.5, cursor: "pointer" }}>
         Logout
       </button>
@@ -2032,6 +2126,7 @@ export default function SellerDoctorTool({ hasAccess = true, onRequestPayment = 
   let overlay = null;
   if (view === "listing") overlay = <ListingDraftTool onBack={() => setView("dashboard")} />;
   else if (view === "labelcrop") overlay = <LabelCropperTool onBack={() => setView("dashboard")} />;
+  else if (view === "photoshoot") overlay = <ProductPhotoshootTool onBack={() => setView("settings")} />;
   else if (view === "billing") overlay = <BillingView hasAccess={hasAccess} daysLeft={daysLeft} onRequestPayment={onRequestPayment} userEmail={userEmail} />;
   else if (view === "settings") overlay = <SettingsView userEmail={userEmail} />;
   else if (view === "analytics") overlay = <AnalyticsView hasAccess={hasAccess} onRequestPayment={onRequestPayment} />;
