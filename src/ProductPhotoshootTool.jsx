@@ -124,7 +124,10 @@ export default function ProductPhotoshootTool({ onBack }) {
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
         const msg = errBody?.error?.message || `Request failed (${res.status})`;
-        throw new Error(msg);
+        // Google's error reason (e.g. ACCESS_TOKEN_TYPE_UNSUPPORTED) can live in
+        // error.status or error.details[].reason, not just the message text —
+        // so match against the whole error body, not just the message string.
+        throw new Error(msg, { cause: JSON.stringify(errBody) });
       }
 
       const data = await res.json();
@@ -140,9 +143,12 @@ export default function ProductPhotoshootTool({ onBack }) {
     } catch (err) {
       console.error(err);
       const msg = String(err.message || err);
-      if (msg.toLowerCase().includes("api key") || msg.toLowerCase().includes("permission") || msg.toLowerCase().includes("unauthenticated")) {
+      const fullDetails = (msg + " " + (err.cause || "")).toLowerCase();
+      if (fullDetails.includes("access_token_type_unsupported") || fullDetails.includes("api_key_service_blocked")) {
+        setError("Ye Google ki taraf se ek known issue hai — kuch accounts ki nayi 'Auth key' (AQ. wali) abhi Gemini API ke saath kaam nahi kar rahi (Google ka apna rollout bug hai, humari taraf se nahi). Kuch din baad dobara try karo, ya Google AI Studio forum pe apni account ke baare mein report karo.");
+      } else if (fullDetails.includes("api key") || fullDetails.includes("permission") || fullDetails.includes("unauthenticated")) {
         setError("API key invalid ya expired lag rahi hai — Settings mein jaake dobara check karo.");
-      } else if (msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("resource_exhausted")) {
+      } else if (fullDetails.includes("quota") || fullDetails.includes("resource_exhausted")) {
         setError("Aaj ki free limit khatam ho gayi lagti hai (Google ki apni free-tier limit) — kal try karo ya apne Google account mein billing enable karo.");
       } else {
         setError(msg);
