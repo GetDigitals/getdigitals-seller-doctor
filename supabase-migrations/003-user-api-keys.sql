@@ -14,6 +14,11 @@ create table if not exists public.user_api_keys (
 
 alter table public.user_api_keys enable row level security;
 
+-- RLS policies alone aren't enough — the underlying Postgres role also
+-- needs basic table-level privileges, or every query fails with
+-- "permission denied for table user_api_keys" before RLS even runs.
+grant select, insert, update, delete on public.user_api_keys to authenticated;
+
 create policy "Users can view their own api key"
   on public.user_api_keys for select
   using (auth.uid() = user_id);

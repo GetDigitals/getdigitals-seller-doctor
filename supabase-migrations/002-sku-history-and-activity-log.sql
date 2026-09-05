@@ -22,6 +22,11 @@ create table if not exists public.sku_snapshots (
 
 alter table public.sku_snapshots enable row level security;
 
+-- RLS policies alone aren't enough — the underlying Postgres role also
+-- needs basic table-level privileges, or every query fails with
+-- "permission denied for table ..." before RLS even runs.
+grant select, insert, update, delete on public.sku_snapshots to authenticated;
+
 create policy "Users can insert their own sku snapshots"
   on public.sku_snapshots for insert
   with check (auth.uid() = user_id);
@@ -47,6 +52,8 @@ create table if not exists public.activity_log (
 );
 
 alter table public.activity_log enable row level security;
+
+grant select, insert, update, delete on public.activity_log to authenticated;
 
 create policy "Users can insert their own activity"
   on public.activity_log for insert
