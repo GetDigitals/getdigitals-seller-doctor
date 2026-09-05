@@ -50,7 +50,8 @@ const STYLE_PRESETS = [
 async function getSavedKey() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
-  const { data } = await supabase.from("user_api_keys").select("gemini_api_key").eq("user_id", user.id).maybeSingle();
+  const { data, error } = await supabase.from("user_api_keys").select("gemini_api_key").eq("user_id", user.id).maybeSingle();
+  if (error) console.error("Key fetch failed:", error);
   return data?.gemini_api_key || null;
 }
 

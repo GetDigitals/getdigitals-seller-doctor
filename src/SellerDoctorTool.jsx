@@ -1994,13 +1994,15 @@ function GeminiKeySetup() {
   const [key, setKey] = useState(""); // input field value
   const [savedKey, setSavedKey] = useState(null); // null = loading
   const [status, setStatus] = useState("idle"); // idle | saving | saved | error
+  const [errorMsg, setErrorMsg] = useState("");
   const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("user_api_keys").select("gemini_api_key").eq("user_id", user.id).maybeSingle();
+      const { data, error } = await supabase.from("user_api_keys").select("gemini_api_key").eq("user_id", user.id).maybeSingle();
+      if (error) { console.error("Key fetch failed:", error); setErrorMsg(error.message); }
       setSavedKey(data?.gemini_api_key || "");
     })();
   }, []);
@@ -2008,20 +2010,36 @@ function GeminiKeySetup() {
   const handleSave = async () => {
     if (!key.trim()) return;
     setStatus("saving");
+    setErrorMsg("");
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      await supabase.from("user_api_keys").upsert({ user_id: user.id, gemini_api_key: key.trim(), updated_at: new Date().toISOString() });
+      if (!user) { setStatus("error"); setErrorMsg("Login session nahi mili — page refresh karke dobara try karo."); return; }
+
+      const { error } = await supabase
+        .from("user_api_keys")
+        .upsert({ user_id: user.id, gemini_api_key: key.trim(), updated_at: new Date().toISOString() });
+
+      if (error) {
+        console.error("Key save failed:", error);
+        setStatus("error");
+        setErrorMsg(error.message || "Save nahi ho paya.");
+        return; // saved-key state ko touch mat karo — jab tak DB confirm na kare
+      }
+
       setSavedKey(key.trim());
       setKey("");
       setStatus("saved");
     } catch (err) {
+      console.error("Key save failed:", err);
       setStatus("error");
+      setErrorMsg(String(err.message || err));
     }
   };
 
   const handleRemove = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    await supabase.from("user_api_keys").delete().eq("user_id", user.id);
+    const { error } = await supabase.from("user_api_keys").delete().eq("user_id", user.id);
+    if (error) { setErrorMsg(error.message); return; }
     setSavedKey("");
   };
 
@@ -2075,7 +2093,7 @@ function GeminiKeySetup() {
           {status === "saving" ? "Save ho raha hai..." : "Save"}
         </button>
       </div>
-      {status === "error" && <p style={{ color: "#A32D2D", fontSize: 12, marginTop: 8 }}>Save nahi ho paya — dobara try karo.</p>}
+      {status === "error" && <p style={{ color: "#A32D2D", fontSize: 12, marginTop: 8 }}>Save nahi ho paya: {errorMsg || "dobara try karo."}</p>}
     </div>
   );
 }
